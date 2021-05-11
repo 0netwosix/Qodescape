@@ -1,0 +1,353 @@
+[
+    {
+        "nodeType": "Stmt_Expression",
+        "expr": {
+            "nodeType": "Expr_FuncCall",
+            "name": {
+                "nodeType": "Name",
+                "parts": [
+                    "header"
+                ],
+                "attributes": {
+                    "startLine": 3,
+                    "startFilePos": 9,
+                    "endLine": 3,
+                    "endFilePos": 14
+                }
+            },
+            "args": [
+                {
+                    "nodeType": "Arg",
+                    "name": null,
+                    "value": {
+                        "nodeType": "Scalar_String",
+                        "value": "X-XSS-Protection: 0",
+                        "attributes": {
+                            "startLine": 3,
+                            "startFilePos": 17,
+                            "endLine": 3,
+                            "endFilePos": 37,
+                            "kind": 2
+                        }
+                    },
+                    "byRef": false,
+                    "unpack": false,
+                    "attributes": {
+                        "startLine": 3,
+                        "startFilePos": 17,
+                        "endLine": 3,
+                        "endFilePos": 37
+                    }
+                }
+            ],
+            "attributes": {
+                "startLine": 3,
+                "startFilePos": 9,
+                "endLine": 3,
+                "endFilePos": 38
+            }
+        },
+        "attributes": {
+            "startLine": 3,
+            "startFilePos": 9,
+            "endLine": 3,
+            "endFilePos": 39
+        }
+    },
+    {
+        "nodeType": "Stmt_If",
+        "cond": {
+            "nodeType": "Expr_BinaryOp_BooleanAnd",
+            "left": {
+                "nodeType": "Expr_FuncCall",
+                "name": {
+                    "nodeType": "Name",
+                    "parts": [
+                        "array_key_exists"
+                    ],
+                    "attributes": {
+                        "startLine": 6,
+                        "startFilePos": 72,
+                        "endLine": 6,
+                        "endFilePos": 87
+                    }
+                },
+                "args": [
+                    {
+                        "nodeType": "Arg",
+                        "name": null,
+                        "value": {
+                            "nodeType": "Scalar_String",
+                            "value": "name",
+                            "attributes": {
+                                "startLine": 6,
+                                "startFilePos": 90,
+                                "endLine": 6,
+                                "endFilePos": 95,
+                                "kind": 2
+                            }
+                        },
+                        "byRef": false,
+                        "unpack": false,
+                        "attributes": {
+                            "startLine": 6,
+                            "startFilePos": 90,
+                            "endLine": 6,
+                            "endFilePos": 95
+                        }
+                    },
+                    {
+                        "nodeType": "Arg",
+                        "name": null,
+                        "value": {
+                            "nodeType": "Expr_Variable",
+                            "name": "_GET",
+                            "attributes": {
+                                "startLine": 6,
+                                "startFilePos": 98,
+                                "endLine": 6,
+                                "endFilePos": 102
+                            }
+                        },
+                        "byRef": false,
+                        "unpack": false,
+                        "attributes": {
+                            "startLine": 6,
+                            "startFilePos": 98,
+                            "endLine": 6,
+                            "endFilePos": 102
+                        }
+                    }
+                ],
+                "attributes": {
+                    "startLine": 6,
+                    "startFilePos": 72,
+                    "endLine": 6,
+                    "endFilePos": 104
+                }
+            },
+            "right": {
+                "nodeType": "Expr_BinaryOp_NotEqual",
+                "left": {
+                    "nodeType": "Expr_ArrayDimFetch",
+                    "var": {
+                        "nodeType": "Expr_Variable",
+                        "name": "_GET",
+                        "attributes": {
+                            "startLine": 6,
+                            "startFilePos": 109,
+                            "endLine": 6,
+                            "endFilePos": 113
+                        }
+                    },
+                    "dim": {
+                        "nodeType": "Scalar_String",
+                        "value": "name",
+                        "attributes": {
+                            "startLine": 6,
+                            "startFilePos": 116,
+                            "endLine": 6,
+                            "endFilePos": 121,
+                            "kind": 1
+                        }
+                    },
+                    "attributes": {
+                        "startLine": 6,
+                        "startFilePos": 109,
+                        "endLine": 6,
+                        "endFilePos": 123
+                    }
+                },
+                "right": {
+                    "nodeType": "Expr_ConstFetch",
+                    "name": {
+                        "nodeType": "Name",
+                        "parts": [
+                            "NULL"
+                        ],
+                        "attributes": {
+                            "startLine": 6,
+                            "startFilePos": 128,
+                            "endLine": 6,
+                            "endFilePos": 131
+                        }
+                    },
+                    "attributes": {
+                        "startLine": 6,
+                        "startFilePos": 128,
+                        "endLine": 6,
+                        "endFilePos": 131
+                    }
+                },
+                "attributes": {
+                    "startLine": 6,
+                    "startFilePos": 109,
+                    "endLine": 6,
+                    "endFilePos": 131
+                }
+            },
+            "attributes": {
+                "startLine": 6,
+                "startFilePos": 72,
+                "endLine": 6,
+                "endFilePos": 131
+            }
+        },
+        "stmts": [
+            {
+                "nodeType": "Stmt_Expression",
+                "expr": {
+                    "nodeType": "Expr_AssignOp_Concat",
+                    "var": {
+                        "nodeType": "Expr_Variable",
+                        "name": "html",
+                        "attributes": {
+                            "startLine": 8,
+                            "startFilePos": 166,
+                            "comments": [
+                                {
+                                    "nodeType": "Comment",
+                                    "text": "\/\/ Feedback for end user",
+                                    "line": 7,
+                                    "filePos": 139,
+                                    "tokenPos": 41,
+                                    "endLine": 7,
+                                    "endFilePos": 162,
+                                    "endTokenPos": 41
+                                }
+                            ],
+                            "endLine": 8,
+                            "endFilePos": 170
+                        }
+                    },
+                    "expr": {
+                        "nodeType": "Expr_BinaryOp_Concat",
+                        "left": {
+                            "nodeType": "Expr_BinaryOp_Concat",
+                            "left": {
+                                "nodeType": "Scalar_String",
+                                "value": "<pre>Hello ",
+                                "attributes": {
+                                    "startLine": 8,
+                                    "startFilePos": 175,
+                                    "endLine": 8,
+                                    "endFilePos": 187,
+                                    "kind": 1
+                                }
+                            },
+                            "right": {
+                                "nodeType": "Expr_ArrayDimFetch",
+                                "var": {
+                                    "nodeType": "Expr_Variable",
+                                    "name": "_GET",
+                                    "attributes": {
+                                        "startLine": 8,
+                                        "startFilePos": 191,
+                                        "endLine": 8,
+                                        "endFilePos": 195
+                                    }
+                                },
+                                "dim": {
+                                    "nodeType": "Scalar_String",
+                                    "value": "name",
+                                    "attributes": {
+                                        "startLine": 8,
+                                        "startFilePos": 198,
+                                        "endLine": 8,
+                                        "endFilePos": 203,
+                                        "kind": 1
+                                    }
+                                },
+                                "attributes": {
+                                    "startLine": 8,
+                                    "startFilePos": 191,
+                                    "endLine": 8,
+                                    "endFilePos": 205
+                                }
+                            },
+                            "attributes": {
+                                "startLine": 8,
+                                "startFilePos": 175,
+                                "endLine": 8,
+                                "endFilePos": 205
+                            }
+                        },
+                        "right": {
+                            "nodeType": "Scalar_String",
+                            "value": "<\/pre>",
+                            "attributes": {
+                                "startLine": 8,
+                                "startFilePos": 209,
+                                "endLine": 8,
+                                "endFilePos": 216,
+                                "kind": 1
+                            }
+                        },
+                        "attributes": {
+                            "startLine": 8,
+                            "startFilePos": 175,
+                            "endLine": 8,
+                            "endFilePos": 216
+                        }
+                    },
+                    "attributes": {
+                        "startLine": 8,
+                        "startFilePos": 166,
+                        "comments": [
+                            {
+                                "nodeType": "Comment",
+                                "text": "\/\/ Feedback for end user",
+                                "line": 7,
+                                "filePos": 139,
+                                "tokenPos": 41,
+                                "endLine": 7,
+                                "endFilePos": 162,
+                                "endTokenPos": 41
+                            }
+                        ],
+                        "endLine": 8,
+                        "endFilePos": 216
+                    }
+                },
+                "attributes": {
+                    "startLine": 8,
+                    "startFilePos": 166,
+                    "comments": [
+                        {
+                            "nodeType": "Comment",
+                            "text": "\/\/ Feedback for end user",
+                            "line": 7,
+                            "filePos": 139,
+                            "tokenPos": 41,
+                            "endLine": 7,
+                            "endFilePos": 162,
+                            "endTokenPos": 41
+                        }
+                    ],
+                    "endLine": 8,
+                    "endFilePos": 217
+                }
+            }
+        ],
+        "elseifs": [],
+        "else": null,
+        "attributes": {
+            "startLine": 6,
+            "startFilePos": 68,
+            "comments": [
+                {
+                    "nodeType": "Comment",
+                    "text": "\/\/ Is there any input?",
+                    "line": 5,
+                    "filePos": 44,
+                    "tokenPos": 9,
+                    "endLine": 5,
+                    "endFilePos": 65,
+                    "endTokenPos": 9
+                }
+            ],
+            "endLine": 9,
+            "endFilePos": 220
+        }
+    }
+]
