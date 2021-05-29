@@ -1,3 +1,4 @@
 test-STs/
-PhpParser/
-/vendor/
+test-scripts/
+
+*.pyc

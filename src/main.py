@@ -2,6 +2,7 @@
 
 import sys
 import json
+from graph import Graph
 
 # Describes "namespace App\Http\Controllers\AnyFolder;"
 def stmtNamespace(name, stmts):
@@ -19,7 +20,7 @@ def stmtNamespace(name, stmts):
 
     # Iterate through "stmt"s and connect "Stmt_Use" for the above "Stmt_Class" node
 
-# Describes "class ClassName extends AnotherClass"
+# Describes "class ClassName extends AnotherClass implements SomeOtherClass"
 def stmtClass(node):
     if node['name']['nodeType'] == 'Identifier':
         # Create the class node
@@ -67,12 +68,21 @@ def openFile(filePath):
 
     return json.loads(currentFile.read())
 
+
 def main():
-    fileDir = 'test-STs/samples-02/'
+    fileDir = '../test-STs/samples-02/'
     filePath = fileDir+'ShodanNotificationController-ast.json'
+    graph = Graph()
 
     # Read json array objects
     iterateObjects(openFile(filePath))
+    graph.close()
+
+    # graph = Graph()
+    # graph.create_node("Shodan", "Class")
+    # graph.create_node("Request", "Support")
+    # graph.create_relationship("Shodan", "Class", "Request", "Support", "USES")
+    # graph.close()
 
 if __name__ == '__main__':
     main()
