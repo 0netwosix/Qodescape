@@ -3,6 +3,7 @@
 from neo4j import GraphDatabase
 import logging
 from neo4j.exceptions import ServiceUnavailable
+from termcolor import cprint
 
 class Graph:
 
@@ -23,7 +24,7 @@ class Graph:
             result = session.write_transaction(
                 self._create_and_return_node, node_name, node_type)
             for row in result:
-                print("Created [Node]: {p1}".format(p1=row['p1']))
+                dbPrint("[Node] Created: {p1}".format(p1=row['p1']))
 
     @staticmethod
     def _create_and_return_node(tx, node_name, node_type):
@@ -49,7 +50,7 @@ class Graph:
             result = session.write_transaction(
                 self._create_and_return_relationship, parent_node, parent_node_type, child_node, child_node_type, relationship_type)
             for row in result:
-                print("Created [Relationship]: {parent} {relationship} {child}".format(parent=row["a"],relationship=row["r"] , child=row["b"]))
+                dbPrint("[Relationship] Created: {parent} '{relationship}' {child}".format(parent=row["a"],relationship=row["r"] , child=row["b"]))
 
     @staticmethod
     def _create_and_return_relationship(tx, parent_node, parent_node_type, child_node, child_node_type, relationship_type):
@@ -75,8 +76,14 @@ class Graph:
     def find_node(self, node_name, node_type):
         with self.driver.session() as session:
             result = session.read_transaction(self._find_and_return_node, node_name, node_type)
-            for row in result:
-                print("Found [Node]: {row}".format(row=row))
+            
+            if result:
+                for row in result:
+                    dbPrint("[Node] Found: {row}".format(row=row))
+                return True
+            else:
+                dbPrint("[Node] Not Found: {node_name}".format(node_name=node_name))
+                return False
 
     @staticmethod
     def _find_and_return_node(tx, node_name, node_type):
@@ -89,12 +96,16 @@ class Graph:
         result = tx.run(query, node_name=node_name)
         return [row["name"] for row in result]
 
+# Green text
+def dbPrint(message):
+    cprint(message, 'green')
 
 def main():
     graph = Graph()
-    graph.create_node("Shodan", "Class")
-    graph.create_node("Request", "Support")
-    graph.create_relationship("Shodan", "Class", "Request", "Support", "USES")
+    graph.create_node("Test", "Class")
+    # graph.create_node("Request", "Support")
+    # graph.create_relationship("Shodan", "Class", "Request", "Support", "USES")
+    # graph.find_node("Shodan", "Object")
     graph.close()
 
 if __name__ == "__main__":
