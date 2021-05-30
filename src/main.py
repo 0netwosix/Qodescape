@@ -2,34 +2,69 @@
 
 import sys
 import json
+from termcolor import cprint
 from graph import Graph
+
+# Red text
+def errorPrint(message):
+    cprint(message, 'red')
 
 # Describes "namespace App\Http\Controllers\AnyFolder;"
 def stmtNamespace(name, stmts):
+    namespaceName = '\\'.join(name)
     # Create a node for the "Stmt_Namespace" using "name"
-    print('Stmt_Namespace -> {}'.format('\\'.join(name)))
+    print('Stmt_Namespace -> {namespaceName}'.format(namespaceName=namespaceName))
+
+    # Create 'NAMESAPCE' node
+    '''Check if a node exist with the given name'''
+    graph.create_node(namespaceName, 'NAMESPACE')
 
     # Iterate through "stmt"s and connect "Stmt_Class" as a child
     # to the above parent namespace
-    for node in stmts:
-        if node['nodeType'] == 'Stmt_Class':
-            stmtClass(node)
-        elif node['nodeType'] == 'Stmt_Use':
-            # In theory last array object should be the class declaration as it how syntax is arranged
-            print('  {} USES {}'.format(stmts[-1]['name']['name'], '\\'.join(node['uses'][0]['name']['parts'])))
+    if stmts:
+        # Create the "Class" node first if exist
+        if stmts[-1]['nodeType'] == 'Stmt_Class':
+            stmtClass(stmts[-1], namespaceName, 'NAMESPACE', 'CONTAINS')
+        else:
+            errorPrint('  Last list element is not a "Class" node: {}'.format(stmts[-1]['nodeType']))
+
+        for node in stmts:
+            if node['nodeType'] == 'Stmt_Class':
+                continue
+            elif node['nodeType'] == 'Stmt_Use':
+                # In theory last array object should be the class declaration as it how syntax is arranged
+                print('  {className} USES {useName}'.format(className=stmts[-1]['name']['name'], useName='\\'.join(node['uses'][0]['name']['parts'])))
+
+                # Create 'CLASS' node
+                '''Check if a node exist with the given name'''
+                graph.create_node('\\'.join(node['uses'][0]['name']['parts']), 'CLASS')
+                graph.create_relationship(stmts[-1]['name']['name'], 'CLASS', '\\'.join(node['uses'][0]['name']['parts']), 'CLASS', 'USES')
+
+            else:
+                errorPrint('  Different "nodeType": {}'.format(node['nodeType']))
 
     # Iterate through "stmt"s and connect "Stmt_Use" for the above "Stmt_Class" node
 
 # Describes "class ClassName extends AnotherClass implements SomeOtherClass"
-def stmtClass(node):
+def stmtClass(node, parentNode=None, parentNodeType=None, relationshipType=None):
     if node['name']['nodeType'] == 'Identifier':
         # Create the class node
         print('  Stmt_Class -> {}'.format(node['name']['name']))
 
+        # Create 'CLASS' node
+        '''Check if a node exist with the given name'''
+        graph.create_node(node['name']['name'], 'CLASS')
+        graph.create_relationship(parentNode, parentNodeType, node['name']['name'], 'CLASS', relationshipType)
+
     # If class contains "extends" or "implements", do that accordingly
     if node['extends']:
         # Create extended node for the class
-        print('  {} EXTENDS {}'.format(node['name']['name'], ''.join(node['extends']['parts'])))
+        print('  {} EXTENDS {}'.format(node['name']['name'], '\\'.join(node['extends']['parts'])))
+
+        # Create 'CLASS' node
+        '''Check if a node exist with the given name'''
+        graph.create_node('\\'.join(node['extends']['parts']), 'CLASS')
+        graph.create_relationship(node['name']['name'], 'CLASS', '\\'.join(node['extends']['parts']), 'CLASS', 'EXTENDS')
 
     if node['implements']:
         # Create implemented node for the class
@@ -72,17 +107,11 @@ def openFile(filePath):
 def main():
     fileDir = '../test-STs/samples-02/'
     filePath = fileDir+'ShodanNotificationController-ast.json'
-    graph = Graph()
 
     # Read json array objects
     iterateObjects(openFile(filePath))
-    graph.close()
-
-    # graph = Graph()
-    # graph.create_node("Shodan", "Class")
-    # graph.create_node("Request", "Support")
-    # graph.create_relationship("Shodan", "Class", "Request", "Support", "USES")
-    # graph.close()
 
 if __name__ == '__main__':
+    graph = Graph()
     main()
+    graph.close()
