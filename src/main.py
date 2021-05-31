@@ -147,6 +147,25 @@ def stmtClass(node, parentNode=None, parentNodeType=None, relationshipType=None)
                 implementedNode='\\'.join(interface['parts'])
             ))
 
+            # Create implemented 'CLASS' node
+            if not graph.find_node('\\'.join(interface['parts']), 'CLASS'):
+                graph.create_node('\\'.join(interface['parts']), 'CLASS')
+            else:
+                errorPrint('Node exist: ', '{nodeName} {nodeType}'.format(
+                    nodeName='\\'.join(interface['parts']),
+                    nodeType='CLASS'
+                ))  
+
+            # Create 'Class IMPLEMENTS AnotherClass' relationship
+            if not graph.find_relationship(node['name']['name'], 'CLASS', '\\'.join(interface['parts']), 'CLASS', 'IMPLEMENTS'):
+                graph.create_relationship(node['name']['name'], 'CLASS', '\\'.join(interface['parts']), 'CLASS', 'IMPLEMENTS')
+            else:
+                errorPrint('Relationship exist: ', '{parentNode} {relationshipType} {childNode}'.format(
+                    parentNode=node['name']['name'],
+                    relationshipType='IMPLEMENTS',
+                    childNode='\\'.join(interface['parts'])
+                ))              
+
 # Read the given array object from iterateSlices()
 def readObject(slice):
     # Iterate through each key in current object
