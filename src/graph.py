@@ -3,7 +3,7 @@
 from neo4j import GraphDatabase
 import logging
 from neo4j.exceptions import ServiceUnavailable
-from termcolor import cprint
+from termcolor import colored
 
 class Graph:
 
@@ -24,7 +24,7 @@ class Graph:
             result = session.write_transaction(
                 self._create_and_return_node, node_name, node_type)
             for row in result:
-                dbPrint("[DB-Node] Created: {p1}".format(p1=row['p1']))
+                dbPrint("[DB-Node] Created: ", "{p1}".format(p1=row['p1']))
 
     @staticmethod
     def _create_and_return_node(tx, node_name, node_type):
@@ -50,7 +50,7 @@ class Graph:
             result = session.write_transaction(
                 self._create_and_return_relationship, parent_node, parent_node_type, child_node, child_node_type, relationship_type)
             for row in result:
-                dbPrint("[DB-Relationship] Created: {parent} '{relationship}' {child}".format(parent=row["a"],relationship=row["r"] , child=row["b"]))
+                dbPrint("[DB-Relationship] Created: ", "{parent} '{relationship}' {child}".format(parent=row["a"],relationship=row["r"] , child=row["b"]))
 
     @staticmethod
     def _create_and_return_relationship(tx, parent_node, parent_node_type, child_node, child_node_type, relationship_type):
@@ -73,16 +73,17 @@ class Graph:
                 query=query, exception=exception))
             raise
 
+    # Returns TRUE if found
     def find_node(self, node_name, node_type):
         with self.driver.session() as session:
             result = session.read_transaction(self._find_and_return_node, node_name, node_type)
             
             if result:
                 for row in result:
-                    dbPrint("[DB-Node] Found: {row}".format(row=row))
+                    dbPrint("[DB-Node] Found: ", "{row}".format(row=row))
                 return True
             else:
-                dbErrorPrint("[DB-Node] Not Found: {node_name}".format(node_name=node_name))
+                dbErrorPrint("[DB-Node] Not Found: ", "{node_name}".format(node_name=node_name))
                 return False
 
     @staticmethod
@@ -96,19 +97,24 @@ class Graph:
         result = tx.run(query, node_name=node_name)
         return [row["name"] for row in result]
 
+    # Return TRUE if found
     def find_relationship(self, parent_node, parent_node_type, child_node, child_node_type, relationship_type):
         with self.driver.session() as session:
             result = session.read_transaction(self._find_and_return_relationship, parent_node, parent_node_type, child_node, child_node_type, relationship_type)
             
             if result:
                 for row in result:
-                    dbPrint("[DB-Relationship] Found: {row}".format(row=row))
+                    dbPrint("[DB-Relationship] Found: ", "{parent_node} {relationship_type} {child_node}".format(
+                            parent_node=parent_node,
+                            relationship_type=row,
+                            child_node=child_node
+                        ))
                 return True
             else:
-                dbErrorPrint("[DB-Relationship] Not Found: {parent_node} {relationship_type} {child_node}".format(
-                    parent_node=parent_node,
-                    relationship_type=relationship_type,
-                    child_node=child_node
+                dbErrorPrint("[DB-Relationship] Not Found: ", "{parent_node} {relationship_type} {child_node}".format(
+                        parent_node=parent_node,
+                        relationship_type=relationship_type,
+                        child_node=child_node
                     ))
                 return False
 
@@ -128,12 +134,18 @@ class Graph:
         return [row["type(r)"] for row in result]
 
 # Green text
-def dbPrint(message):
-    cprint(message, 'green')
+def dbPrint(colored_message, message):
+    print("{colored_message} {message}".format(
+        colored_message=colored(colored_message, 'green'),
+        message=message
+    ))
 
-# Red text
-def dbErrorPrint(message):
-    cprint(message, 'red')
+# Yellow text
+def dbErrorPrint(colored_message, message):
+    print("{colored_message} {message}".format(
+        colored_message=colored(colored_message, 'yellow'),
+        message=message
+    ))
 
 def main():
     graph = Graph()
@@ -141,7 +153,7 @@ def main():
     # graph.create_node("Request", "Support")
     # graph.create_relationship("Shodan", "Class", "Request", "Support", "USES")
     # graph.find_node("Shodan", "Object")
-    graph.find_relationship('ShodanNotificationController', 'CLASS', 'Controller', 'CLASS', 'CONTAINS')
+    graph.find_relationship('ShodanNotificationController', 'CLASS', 'Controller', 'CLASS', 'EXTENDS')
     graph.close()
 
 if __name__ == "__main__":

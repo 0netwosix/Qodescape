@@ -2,12 +2,15 @@
 
 import sys
 import json
-from termcolor import cprint
+from termcolor import colored
 from graph import Graph
 
 # Red text
-def errorPrint(message):
-    cprint(message, 'red')
+def errorPrint(colored_message, message):
+    print("{colored_message} {message}".format(
+        colored_message=colored(colored_message, 'red'),
+        message=message
+    ))
 
 # Describes "namespace App\Http\Controllers\AnyFolder;"
 def stmtNamespace(name, stmts):
@@ -16,59 +19,133 @@ def stmtNamespace(name, stmts):
     print('Stmt_Namespace -> {namespaceName}'.format(namespaceName=namespaceName))
 
     # Create 'NAMESAPCE' node
-    '''Check if a node exist with the given name'''
-    graph.create_node(namespaceName, 'NAMESPACE')
+    if not graph.find_node(namespaceName, 'NAMESPACE'):
+        graph.create_node(namespaceName, 'NAMESPACE')
+    else:
+        errorPrint('Node exist: ', '{nodeName} {nodeType}'.format(nodeName=namespaceName, nodeType='NAMESPACE'))
 
     # Iterate through "stmt"s and connect "Stmt_Class" as a child
     # to the above parent namespace
     if stmts:
         # Create the "Class" node first if exist
+        # In theory last array object should be the class declaration as it how syntax is arranged
         if stmts[-1]['nodeType'] == 'Stmt_Class':
             stmtClass(stmts[-1], namespaceName, 'NAMESPACE', 'CONTAINS')
+
+            for node in stmts:
+                if node['nodeType'] == 'Stmt_Class':
+                    continue
+                # Iterate through "stmt"s and connect "Stmt_Use" for the above "Stmt_Class" node
+                elif node['nodeType'] == 'Stmt_Use':
+                    print('{className} USES {usePath} {useClassName}'.format(
+                        className=stmts[-1]['name']['name'], 
+                        usePath='\\'.join(node['uses'][0]['name']['parts'][:-1]), 
+                        useClassName=node['uses'][0]['name']['parts'][-1]
+                    ))
+
+                    # Create 'NAMESPACE' node
+                    if not graph.find_node('\\'.join(node['uses'][0]['name']['parts'][:-1]), 'NAMESPACE'):
+                        graph.create_node('\\'.join(node['uses'][0]['name']['parts'][:-1]), 'NAMESPACE')
+                    else:
+                        errorPrint('Node exist: ', '{nodeName} {nodeType}'.format(
+                            nodeName='\\'.join(node['uses'][0]['name']['parts'][:-1]), 
+                            nodeType='NAMESPACE'
+                        ))
+
+                    # Create 'CLASS' node
+                    if not graph.find_node(node['uses'][0]['name']['parts'][-1], 'CLASS'):
+                        graph.create_node(node['uses'][0]['name']['parts'][-1], 'CLASS')
+                    else:
+                        errorPrint('Node exist: ', '{nodeName} {nodeType}'.format(
+                            nodeName=node['uses'][0]['name']['parts'][-1],
+                            nodeType='CLASS'
+                        ))   
+
+                    # Create 'Namespace CONTAINS Class' relationship 
+                    if not graph.find_relationship('\\'.join(node['uses'][0]['name']['parts'][:-1]), 'NAMESPACE', node['uses'][0]['name']['parts'][-1], 'CLASS', 'CONTAINS'):
+                        graph.create_relationship('\\'.join(node['uses'][0]['name']['parts'][:-1]), 'NAMESPACE', node['uses'][0]['name']['parts'][-1], 'CLASS', 'CONTAINS') 
+                    else:
+                        errorPrint('Relationship exist: ', '{parentNode} {relationshipType} {childNode}'.format(
+                            parentNode='\\'.join(node['uses'][0]['name']['parts'][:-1]),
+                            relationshipType='CONTAINS',
+                            childNode=node['uses'][0]['name']['parts'][-1]
+                        ))
+
+                    # Create 'Class USES AnotherClass' relationship
+                    if not graph.find_relationship(stmts[-1]['name']['name'], 'CLASS', node['uses'][0]['name']['parts'][-1], 'CLASS', 'USES'):
+                        graph.create_relationship(stmts[-1]['name']['name'], 'CLASS', node['uses'][0]['name']['parts'][-1], 'CLASS', 'USES')
+                    else:
+                        errorPrint('Relationship exist: ', '{parentNode} {relationshipType} {childNode}'.format(
+                            parentNode=stmts[-1]['name']['name'],
+                            relationshipType='USES',
+                            childNode=node['uses'][0]['name']['parts'][-1]
+                        ))
+
+                else:
+                    errorPrint('Different "nodeType": ', '{}'.format(node['nodeType']))
         else:
-            errorPrint('  Last list element is not a "Class" node: {}'.format(stmts[-1]['nodeType']))
-
-        for node in stmts:
-            if node['nodeType'] == 'Stmt_Class':
-                continue
-            elif node['nodeType'] == 'Stmt_Use':
-                # In theory last array object should be the class declaration as it how syntax is arranged
-                print('  {className} USES {useName}'.format(className=stmts[-1]['name']['name'], useName='\\'.join(node['uses'][0]['name']['parts'])))
-
-                # Create 'CLASS' node
-                '''Check if a node exist with the given name'''
-                graph.create_node('\\'.join(node['uses'][0]['name']['parts']), 'CLASS')
-                graph.create_relationship(stmts[-1]['name']['name'], 'CLASS', '\\'.join(node['uses'][0]['name']['parts']), 'CLASS', 'USES')
-
-            else:
-                errorPrint('  Different "nodeType": {}'.format(node['nodeType']))
-
-    # Iterate through "stmt"s and connect "Stmt_Use" for the above "Stmt_Class" node
+            errorPrint('Last list element is not a "Class" node: ', '{}'.format(stmts[-1]['nodeType']))
 
 # Describes "class ClassName extends AnotherClass implements SomeOtherClass"
 def stmtClass(node, parentNode=None, parentNodeType=None, relationshipType=None):
     if node['name']['nodeType'] == 'Identifier':
         # Create the class node
-        print('  Stmt_Class -> {}'.format(node['name']['name']))
+        print('Stmt_Class -> {}'.format(node['name']['name']))
 
         # Create 'CLASS' node
-        '''Check if a node exist with the given name'''
-        graph.create_node(node['name']['name'], 'CLASS')
-        graph.create_relationship(parentNode, parentNodeType, node['name']['name'], 'CLASS', relationshipType)
+        if not graph.find_node(node['name']['name'], 'CLASS'):
+            graph.create_node(node['name']['name'], 'CLASS')
+        else:
+            errorPrint('Node exist: ', '{nodeName} {nodeType}'.format(
+                nodeName=node['name']['name'],
+                nodeType='CLASS'
+            ))
 
-    # If class contains "extends" or "implements", do that accordingly
+        # Create 'Namespace CONTAINS Class' relationship
+        if not graph.find_relationship(parentNode, parentNodeType, node['name']['name'], 'CLASS', relationshipType):
+            graph.create_relationship(parentNode, parentNodeType, node['name']['name'], 'CLASS', relationshipType)
+        else:
+            errorPrint('Relationship exist: ', '{parentNode} {relationshipType} {childNode}'.format(
+                parentNode=parentNode,
+                relationshipType=relationshipType,
+                childNode=node['name']['name']
+            ))    
+
+    # If class contains "extends"
     if node['extends']:
         # Create extended node for the class
-        print('  {} EXTENDS {}'.format(node['name']['name'], '\\'.join(node['extends']['parts'])))
+        print('{thisNode} EXTENDS {extendedNode}'.format(
+            thisNode=node['name']['name'], 
+            extendedNode='\\'.join(node['extends']['parts'])
+        ))
 
-        # Create 'CLASS' node
-        '''Check if a node exist with the given name'''
-        graph.create_node('\\'.join(node['extends']['parts']), 'CLASS')
-        graph.create_relationship(node['name']['name'], 'CLASS', '\\'.join(node['extends']['parts']), 'CLASS', 'EXTENDS')
+        # Create extended 'CLASS' node
+        if not graph.find_node('\\'.join(node['extends']['parts']), 'CLASS'):
+            graph.create_node('\\'.join(node['extends']['parts']), 'CLASS')
+        else:
+            errorPrint('Node exist: ', '{nodeName} {nodeType}'.format(
+                nodeName='\\'.join(node['extends']['parts']),
+                nodeType='CLASS'
+            ))
 
+        # Create 'Class EXTENDS AnotherClass' relationship
+        if not graph.find_relationship(node['name']['name'], 'CLASS', '\\'.join(node['extends']['parts']), 'CLASS', 'EXTENDS'):
+            graph.create_relationship(node['name']['name'], 'CLASS', '\\'.join(node['extends']['parts']), 'CLASS', 'EXTENDS')
+        else:
+            errorPrint('Relationship exist: ', '{parentNode} {relationshipType} {childNode}'.format(
+                parentNode=node['name']['name'],
+                relationshipType='EXTENDS',
+                childNode='\\'.join(node['extends']['parts'])
+            ))    
+
+    # If class contains "implements"
     if node['implements']:
-        # Create implemented node for the class
-        print('Implemented')
+        for interface in node['implements']:
+            # Create each implemented node for the class
+            print('{thisNode} IMPLEMENTS {implementedNode}'.format(
+                thisNode=node['name']['name'],
+                implementedNode='\\'.join(interface['parts'])
+            ))
 
 # Read the given array object from iterateSlices()
 def readObject(slice):
@@ -106,7 +183,7 @@ def openFile(filePath):
 
 def main():
     fileDir = '../test-STs/samples-02/'
-    filePath = fileDir+'ShodanNotificationController-ast.json'
+    filePath = fileDir+'LaunchOnDemandScan-with-Shodan-ast.json'
 
     # Read json array objects
     iterateObjects(openFile(filePath))
