@@ -24,13 +24,13 @@ class Graph:
             result = session.write_transaction(
                 self._create_and_return_node, node_name, node_type)
             for row in result:
-                dbPrint("[Node] Created: {p1}".format(p1=row['p1']))
+                dbPrint("[DB-Node] Created: {p1}".format(p1=row['p1']))
 
     @staticmethod
     def _create_and_return_node(tx, node_name, node_type):
         # Create a query with given parameters and execute it
         query = (
-            "CREATE (p1:{} ".format(node_type)+
+            "CREATE (p1:{node_type} ".format(node_type=node_type)+
                 "{ name: $node_name }) "
             "RETURN p1"
         )
@@ -50,17 +50,17 @@ class Graph:
             result = session.write_transaction(
                 self._create_and_return_relationship, parent_node, parent_node_type, child_node, child_node_type, relationship_type)
             for row in result:
-                dbPrint("[Relationship] Created: {parent} '{relationship}' {child}".format(parent=row["a"],relationship=row["r"] , child=row["b"]))
+                dbPrint("[DB-Relationship] Created: {parent} '{relationship}' {child}".format(parent=row["a"],relationship=row["r"] , child=row["b"]))
 
     @staticmethod
     def _create_and_return_relationship(tx, parent_node, parent_node_type, child_node, child_node_type, relationship_type):
         # Create a query with given parameters and execute it
         query = (
             "MATCH "
-            "   (a:{}), ".format(parent_node_type)+
-            "   (b:{}) ".format(child_node_type)+
+            "   (a:{parent_node_type}), ".format(parent_node_type=parent_node_type)+
+            "   (b:{child_node_type}) ".format(child_node_type=child_node_type)+
             "WHERE a.name = $parent_node AND b.name = $child_node "
-            "CREATE (a)-[r:{}]->(b) ".format(relationship_type)+
+            "CREATE (a)-[r:{relationship_type}]->(b) ".format(relationship_type=relationship_type)+
             "RETURN a,b,type(r) "
         )
         result = tx.run(query, parent_node=parent_node, child_node=child_node)
@@ -79,33 +79,69 @@ class Graph:
             
             if result:
                 for row in result:
-                    dbPrint("[Node] Found: {row}".format(row=row))
+                    dbPrint("[DB-Node] Found: {row}".format(row=row))
                 return True
             else:
-                dbPrint("[Node] Not Found: {node_name}".format(node_name=node_name))
+                dbErrorPrint("[DB-Node] Not Found: {node_name}".format(node_name=node_name))
                 return False
 
     @staticmethod
     def _find_and_return_node(tx, node_name, node_type):
         # Create a query with given parameters and execute it
         query = (
-            "MATCH (p:{}) ".format(node_type)+
+            "MATCH (p:{node_type}) ".format(node_type=node_type)+
             "WHERE p.name = $node_name "
             "RETURN p.name AS name"
         )
         result = tx.run(query, node_name=node_name)
         return [row["name"] for row in result]
 
+    def find_relationship(self, parent_node, parent_node_type, child_node, child_node_type, relationship_type):
+        with self.driver.session() as session:
+            result = session.read_transaction(self._find_and_return_relationship, parent_node, parent_node_type, child_node, child_node_type, relationship_type)
+            
+            if result:
+                for row in result:
+                    dbPrint("[DB-Relationship] Found: {row}".format(row=row))
+                return True
+            else:
+                dbErrorPrint("[DB-Relationship] Not Found: {parent_node} {relationship_type} {child_node}".format(
+                    parent_node=parent_node,
+                    relationship_type=relationship_type,
+                    child_node=child_node
+                    ))
+                return False
+
+    @staticmethod
+    def _find_and_return_relationship(tx, parent_node, parent_node_type, child_node, child_node_type, relationship_type):
+        # Create a query with given parameters and execute it
+        query = (
+            "MATCH (n:{parent_node_type})-[r:{relationship_type}]->(m:{child_node_type}) ".format(
+                parent_node_type=parent_node_type,
+                relationship_type=relationship_type,
+                child_node_type=child_node_type
+            )+
+            "WHERE n.name= $parent_node and m.name= $child_node "
+            "RETURN type(r) "
+        )
+        result = tx.run(query, parent_node=parent_node, child_node=child_node)
+        return [row["type(r)"] for row in result]
+
 # Green text
 def dbPrint(message):
     cprint(message, 'green')
 
+# Red text
+def dbErrorPrint(message):
+    cprint(message, 'red')
+
 def main():
     graph = Graph()
-    graph.create_node("Test", "Class")
+    # graph.create_node("Test", "Class")
     # graph.create_node("Request", "Support")
     # graph.create_relationship("Shodan", "Class", "Request", "Support", "USES")
     # graph.find_node("Shodan", "Object")
+    graph.find_relationship('ShodanNotificationController', 'CLASS', 'Controller', 'CLASS', 'CONTAINS')
     graph.close()
 
 if __name__ == "__main__":
