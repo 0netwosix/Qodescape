@@ -6,7 +6,7 @@ from termcolor import colored
 from graph import Graph
 
 # Red text
-def errorPrint(colored_message, message):
+def errorPrint(colored_message, message=None):
     print("{colored_message} {message}".format(
         colored_message=colored(colored_message, 'red'),
         message=message
@@ -166,7 +166,7 @@ def stmtClass(node, parentNode=None, parentNodeType=None, relationshipType=None)
                     childNode='\\'.join(interface['parts'])
                 ))              
 
-# Read the given array object from iterateSlices()
+# Read the given array object from iterateObjects()
 def readObject(slice):
     # Iterate through each key in current object
     for key in slice.keys():
@@ -194,15 +194,21 @@ def openFile(filePath):
     try:
         currentFile = open(filePath, 'r')
     except FileNotFoundError:
-        print('File not found -> "{}"'.format(filePath))
+        errorPrint('[ERROR] File not found: ', '{}'.format(filePath))
         sys.exit(1)
 
     return json.loads(currentFile.read())
 
 
 def main():
-    fileDir = '../test-STs/samples-02/'
-    filePath = fileDir+'LaunchOnDemandScan-with-Shodan-ast.json'
+    if len(sys.argv) == 2:
+        if sys.argv[1] == '--help':
+            print('Usage: ./main.py [file path]')
+            sys.exit(1)
+        filePath = sys.argv[1]
+    else:
+        fileDir = '../test-STs/samples-02/'
+        filePath = fileDir+'LaunchOnDemandScan-with-Shodan-ast.json'
 
     # Read json array objects
     iterateObjects(openFile(filePath))
