@@ -6,6 +6,65 @@ class NodeType:
     def __init__(self, graph):
         self.graph = graph
 
+    def stmt_expression(self, expr, parent_node, parent_node_type):
+        if expr['nodeType'] == 'Expr_Assign':
+            # Create the variable and its relationship with the parent node
+            if expr['var']['nodeType'] == 'Expr_Variable':
+                self.expr_variable(expr, parent_node, parent_node_type)
+
+            # If the value of above variable is a "String"
+            if expr['expr']['nodeType'] == 'Scalar_String':
+                # What to do
+                pass
+            # If the value of the above variable is a "Function call"
+            elif expr['expr']['nodeType'] == 'Expr_FuncCall':
+                self.expr_func_call(expr['expr'], expr['var']['name'], 'VARIABLE')
+        elif expr['nodeType'] == 'Expr_FuncCall':
+            self.expr_func_call(expr, parent_node, parent_node_type)
+                
+    # Create a function call relationship in > "$result = mysqli_query($con, $query);"
+    # It creates the function if it does not exist
+    def expr_func_call(self, expr, parent_node, parent_node_type):
+        # Create function node
+        if not self.graph.find_node(" ".join(expr['name']['parts']), 'FUNCTION'):
+            self.graph.create_node(" ".join(expr['name']['parts']), 'FUNCTION')
+        else:
+            Print.errorPrint('Node exist: ', '{node_name} {node_type}'.format(
+                node_name=" ".join(expr['name']['parts']), 
+                node_type='FUNCTION'
+            ))
+
+        # Create "FUNCTION_CALL" relationship
+        if not self.graph.find_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), 'FUNCTION', 'FUNCTION_CALL'):
+            self.graph.create_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), 'FUNCTION', 'FUNCTION_CALL')
+        else:
+            Print.errorPrint('Relationship exist: ', '{parent_node} {relationship_type} {child_node}'.format(
+                parent_node=parent_node,
+                relationship_type='FUNCTION_CALL',
+                child_node=" ".join(expr['name']['parts'])
+            ))
+
+    # Create a variable and its relationship
+    def expr_variable(self, expr, parent_node, parent_node_type):
+        # Create the variable implementing a relationship with the parent
+        if not self.graph.find_node(expr['var']['name'], 'VARIABLE'):
+            self.graph.create_node(expr['var']['name'], 'VARIABLE')
+        else:
+            Print.errorPrint('Node exist: ', '{node_name} {node_type}'.format(
+                node_name=expr['var']['name'], 
+                node_type='VARIABLE'
+            ))
+
+        # Create the relationship with the parent
+        if not self.graph.find_relationship(parent_node, parent_node_type, expr['var']['name'], 'VARIABLE', 'IS_VARIABLE'):
+            self.graph.create_relationship(parent_node, parent_node_type, expr['var']['name'], 'VARIABLE', 'IS_VARIABLE')
+        else:
+            Print.errorPrint('Relationship exist: ', '{parent_node} {relationship_type} {child_node}'.format(
+                parent_node=parent_node,
+                relationship_type='IS_VARIABLE',
+                child_node=expr['var']['name']
+            ))
+
     # Create a node for the FileName
     def filename_node(self, file_name):
         print('File_Name Node -> {file_name}'.format(file_name=file_name))
