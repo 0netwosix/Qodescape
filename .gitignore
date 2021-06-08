@@ -1,4 +1,6 @@
 test-STs/
 test-scripts/
+test-projects/
 
 *.pyc
+*.code-workspace
