@@ -3,10 +3,9 @@
 from neo4j import GraphDatabase
 import logging
 from neo4j.exceptions import ServiceUnavailable
-from termcolor import colored
+from utils.support import Print
 
 class Graph:
-
     def __init__(self):
         uri = "bolt://localhost:7687"
         user = "neo4j"
@@ -19,12 +18,13 @@ class Graph:
         self.driver.close()
 
     def create_node(self, node_name, node_type):
+        # pass
         with self.driver.session() as session:
             # Write transactions allow the driver to handle retries and transient errors
             result = session.write_transaction(
                 self._create_and_return_node, node_name, node_type)
             for row in result:
-                dbPrint("[DB-Node] Created: ", "{p1}".format(p1=row['p1']))
+                Print.dbPrint("[DB-Node] Created: ", "{node}".format(node=row['p1']))
 
     @staticmethod
     def _create_and_return_node(tx, node_name, node_type):
@@ -45,12 +45,16 @@ class Graph:
             raise
 
     def create_relationship(self, parent_node, parent_node_type, child_node, child_node_type, relationship_type):
+        # pass
         with self.driver.session() as session:
             # Write transactions allow the driver to handle retries and transient errors
             result = session.write_transaction(
                 self._create_and_return_relationship, parent_node, parent_node_type, child_node, child_node_type, relationship_type)
             for row in result:
-                dbPrint("[DB-Relationship] Created: ", "{parent} '{relationship}' {child}".format(parent=row["a"],relationship=row["r"] , child=row["b"]))
+                Print.dbPrint("[DB-Relationship] Created: ", "{parent} '{relationship}' {child}".format(
+                    parent=row["a"],
+                    relationship=row["r"] , 
+                    child=row["b"]))
 
     @staticmethod
     def _create_and_return_relationship(tx, parent_node, parent_node_type, child_node, child_node_type, relationship_type):
@@ -80,10 +84,10 @@ class Graph:
             
             if result:
                 for row in result:
-                    dbPrint("[DB-Node] Found: ", "{row}".format(row=row))
+                    Print.dbPrint("[DB-Node] Found: ", "{row}".format(row=row))
                 return True
             else:
-                dbErrorPrint("[DB-Node] Not Found: ", "{node_name}".format(node_name=node_name))
+                Print.dbErrorPrint("[DB-Node] Not Found: ", "{node_name}".format(node_name=node_name))
                 return False
 
     @staticmethod
@@ -104,14 +108,14 @@ class Graph:
             
             if result:
                 for row in result:
-                    dbPrint("[DB-Relationship] Found: ", "{parent_node} {relationship_type} {child_node}".format(
+                    Print.dbPrint("[DB-Relationship] Found: ", "{parent_node} {relationship_type} {child_node}".format(
                             parent_node=parent_node,
                             relationship_type=row,
                             child_node=child_node
                         ))
                 return True
             else:
-                dbErrorPrint("[DB-Relationship] Not Found: ", "{parent_node} {relationship_type} {child_node}".format(
+                Print.dbErrorPrint("[DB-Relationship] Not Found: ", "{parent_node} {relationship_type} {child_node}".format(
                         parent_node=parent_node,
                         relationship_type=relationship_type,
                         child_node=child_node
@@ -132,20 +136,6 @@ class Graph:
         )
         result = tx.run(query, parent_node=parent_node, child_node=child_node)
         return [row["type(r)"] for row in result]
-
-# Green text
-def dbPrint(colored_message, message):
-    print("{colored_message} {message}".format(
-        colored_message=colored(colored_message, 'green'),
-        message=message
-    ))
-
-# Yellow text
-def dbErrorPrint(colored_message, message):
-    print("{colored_message} {message}".format(
-        colored_message=colored(colored_message, 'yellow'),
-        message=message
-    ))
 
 def main():
     graph = Graph()
