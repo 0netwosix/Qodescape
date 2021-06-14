@@ -5,7 +5,7 @@ from termcolor import colored
 class Print:
     # Green text
     @staticmethod
-    def dbPrint(colored_message, message):
+    def dbPrint(colored_message, message=''):
         print("{colored_message} {message}".format(
             colored_message=colored(colored_message, 'green'),
             message=message
@@ -13,7 +13,7 @@ class Print:
 
     # Yellow text
     @staticmethod
-    def dbErrorPrint(colored_message, message):
+    def dbErrorPrint(colored_message, message=''):
         print("{colored_message} {message}".format(
             colored_message=colored(colored_message, 'yellow'),
             message=message
@@ -21,7 +21,7 @@ class Print:
 
     # Red text
     @staticmethod
-    def errorPrint(colored_message, message=None):
+    def errorPrint(colored_message, message=''):
         print("{colored_message} {message}".format(
             colored_message=colored(colored_message, 'red'),
             message=message
