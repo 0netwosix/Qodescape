@@ -24,7 +24,7 @@ class Graph:
             result = session.write_transaction(
                 self._create_and_return_node, node_name, node_type)
             for row in result:
-                Print.dbPrint("[DB-Node] Created: ", "{node}".format(node=row['p1']))
+                Print.dbPrint("CREATED ", "[DB-Node]: {node}".format(node=row['p1']))
 
     @staticmethod
     def _create_and_return_node(tx, node_name, node_type):
@@ -51,7 +51,7 @@ class Graph:
             result = session.write_transaction(
                 self._create_and_return_relationship, parent_node, parent_node_type, child_node, child_node_type, relationship_type)
             for row in result:
-                Print.dbPrint("[DB-Relationship] Created: ", "{parent} '{relationship}' {child}".format(
+                Print.dbPrint("CREATED ", "[DB-Relationship]: {parent} {relationship} {child}".format(
                     parent=row["a"],
                     relationship=row["r"] , 
                     child=row["b"]))
@@ -84,10 +84,10 @@ class Graph:
             
             if result:
                 for row in result:
-                    Print.dbPrint("[DB-Node] Found: ", "{row}".format(row=row))
+                    Print.dbPrint("FOUND ", "[DB-Node]: {row}".format(row=row))
                 return True
             else:
-                Print.dbErrorPrint("[DB-Node] Not Found: ", "{node_name}".format(node_name=node_name))
+                Print.dbErrorPrint("NOT FOUND ", "[DB-Node]: {node_name}".format(node_name=node_name))
                 return False
 
     @staticmethod
@@ -108,14 +108,14 @@ class Graph:
             
             if result:
                 for row in result:
-                    Print.dbPrint("[DB-Relationship] Found: ", "{parent_node} {relationship_type} {child_node}".format(
+                    Print.dbPrint("FOUND ", "[DB-Relationship]: {parent_node} {relationship_type} {child_node}".format(
                             parent_node=parent_node,
                             relationship_type=row,
                             child_node=child_node
                         ))
                 return True
             else:
-                Print.dbErrorPrint("[DB-Relationship] Not Found: ", "{parent_node} {relationship_type} {child_node}".format(
+                Print.dbErrorPrint("NOT FOUND ", "[DB-Relationship]: {parent_node} {relationship_type} {child_node}".format(
                         parent_node=parent_node,
                         relationship_type=relationship_type,
                         child_node=child_node
