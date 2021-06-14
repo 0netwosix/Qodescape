@@ -27,7 +27,7 @@ def read_object(slice):
     # Iterate through each key in current object
     for key, value in slice.items():
         if key == 'nodeType':
-            print('[test] KEY: {} -> {}'.format(key, value))
+            print('[main] KEY: {} -> {}'.format(key, value))
 
             # nodeType: "Stmt_InlineHTML"
             if value == 'Stmt_InlineHTML':
@@ -50,9 +50,9 @@ def read_object(slice):
                 node_type.stmt_expression(slice['expr'], file_name, 'FILENAME')
 
         elif type(value) is dict:
-            print('[test] DICT: {} -> {}'.format(key ,value.keys()))
+            print('[main] DICT: {} -> {}'.format(key ,value.keys()))
         else:
-            print('[test] KEY: {}'.format(key))
+            print('[main] KEY: {}'.format(key))
             
 
 # Iterate through each json array object
