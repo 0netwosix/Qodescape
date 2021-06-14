@@ -12,6 +12,8 @@ class NodeType:
             if expr['var']['nodeType'] == 'Expr_Variable':
                 self.expr_variable(expr, parent_node, parent_node_type)
 
+            ''' Following describes the value of above variable
+            '''
             # If the value of above variable is a "String"
             if expr['expr']['nodeType'] == 'Scalar_String':
                 # Need to decide
@@ -19,8 +21,35 @@ class NodeType:
             # If the value of the above variable is a "Function call"
             elif expr['expr']['nodeType'] == 'Expr_FuncCall':
                 self.expr_func_call(expr['expr'], expr['var']['name'], 'VARIABLE')
+            # If the value of the above variable is "$GET['id']"
+            elif expr['expr']['nodeType'] == 'Expr_ArrayDimFetch':
+                self.expr_array_dim_fetch(expr['expr'], expr['var']['name'], 'VARIABLE', 'ASSIGNS')
+            # If the value of the above variable is similar to "select * from `products` where productCode='$prodCode'"
+            elif expr['expr']['nodeType'] == 'Scalar_Encapsed':
+                if expr['expr']['parts']:
+                    # Loop through the parts of the string
+                    for part in expr['expr']['parts']:
+                        if part['nodeType'] == 'Expr_Variable':
+                            # This variable must have a node at this point, if not something is not right
+                            if self.graph.find_node(part['name'], 'VARIABLE'):
+                                # If it has the node, create the relationship with the variable to which it refers
+                                if not self.graph.find_relationship(expr['var']['name'], 'VARIABLE', part['name'], 'VARIABLE', 'ASSIGNS'):
+                                    self.graph.create_relationship(expr['var']['name'], 'VARIABLE', part['name'], 'VARIABLE', 'ASSIGNS')
+                            else:
+                                Print.errorPrint('NOT FOUND ', '[NODE]: {}'.format(part['name']))
+
+
         elif expr['nodeType'] == 'Expr_FuncCall':
             self.expr_func_call(expr, parent_node, parent_node_type)
+
+    def expr_array_dim_fetch(self, expr, parent_node, parent_node_type, relationship_type):
+        # Create the node
+        if not self.graph.find_node(expr['var']['name'], 'VARIABLE'):
+            self.graph.create_node(expr['var']['name'], 'VARIABLE')
+
+        # Create the relationship
+        if not self.graph.find_relationship(parent_node, parent_node_type, expr['var']['name'], 'VARIABLE', relationship_type):
+            self.graph.create_relationship(parent_node, parent_node_type, expr['var']['name'], 'VARIABLE', relationship_type)
                 
     # Create a function call relationship in > "$result = mysqli_query($con, $query);"
     # It creates the function if it does not exist
@@ -32,6 +61,18 @@ class NodeType:
         # Create "FUNCTION_CALL" relationship
         if not self.graph.find_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), 'FUNCTION', 'FUNCTION_CALL'):
             self.graph.create_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), 'FUNCTION', 'FUNCTION_CALL')
+
+        if expr['args']:
+            for argument in expr['args']:
+                # If argument is a variable, else it should be scalar_string
+                if 'name' in argument['value']:
+                    # Create argument node if it is not there
+                    if not self.graph.find_node(argument['value']['name'], 'VARIABLE'):
+                        self.graph.create_node(argument['value']['name'], 'VARIABLE')
+
+                    # Create the "IS_ARGUMENT" relationship
+                    if not self.graph.find_relationship(" ".join(expr['name']['parts']), 'FUNCTION', argument['value']['name'], 'VARIABLE', 'IS_ARGUMENT'):
+                        self.graph.create_relationship(" ".join(expr['name']['parts']), 'FUNCTION', argument['value']['name'], 'VARIABLE', 'IS_ARGUMENT')
 
     # Create a variable and its relationship
     def expr_variable(self, expr, parent_node, parent_node_type):
