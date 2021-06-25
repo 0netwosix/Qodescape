@@ -10,7 +10,7 @@ class NodeType:
         if expr['nodeType'] == 'Expr_Assign':
             # Create the variable and its relationship with the parent node
             if expr['var']['nodeType'] == 'Expr_Variable':
-                self.expr_variable(expr, parent_node, parent_node_type)
+                self.expr_variable(expr, parent_node, parent_node_type, parent_node)
 
             ''' Following describes the value of above variable
             '''
@@ -20,69 +20,72 @@ class NodeType:
                 pass
             # If the value of the above variable is a "Function call"
             elif expr['expr']['nodeType'] == 'Expr_FuncCall':
-                self.expr_func_call(expr['expr'], expr['var']['name'], 'VARIABLE')
+                self.expr_func_call(expr['expr'], expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), parent_node)
             # If the value of the above variable is similar to "$GET['id']"
             elif expr['expr']['nodeType'] == 'Expr_ArrayDimFetch':
-                self.expr_array_dim_fetch(expr['expr'], expr['var']['name'], 'VARIABLE', 'ASSIGNS')
+                self.expr_array_dim_fetch(expr['expr'], expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), 'ASSIGNS', parent_node)
             # If the value of the above variable is similar to "select * from `products` where productCode='$prodCode'"
             elif expr['expr']['nodeType'] == 'Scalar_Encapsed':
                 if expr['expr']['parts']:
                     # Loop through the parts of the string
                     for part in expr['expr']['parts']:
                         if part['nodeType'] == 'Expr_Variable':
-                            # This variable must have a node at this point, if not something is not right
-                            if self.graph.find_node(part['name'], 'VARIABLE'):
-                                # If it has the node, create the relationship with the variable to which it refers
-                                if not self.graph.find_relationship(expr['var']['name'], 'VARIABLE', part['name'], 'VARIABLE', 'ASSIGNS'):
-                                    self.graph.create_relationship(expr['var']['name'], 'VARIABLE', part['name'], 'VARIABLE', 'ASSIGNS')
+                            # This variable must have a node at this point, therefore it is not going to create one
+                            # as a result we can't call the existing function expr_variable() to handle this.
+                            if self.graph.find_node(part['name'], '{scope}:VARIABLE'.format(scope=parent_node)):
+                                # If it has the node, create the relationship with the variable to which it refers.
+                                if not self.graph.find_relationship(expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), part['name'], '{scope}:VARIABLE'.format(scope=parent_node), 'ASSIGNS'):
+                                    self.graph.create_relationship(expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), part['name'], '{scope}:VARIABLE'.format(scope=parent_node), 'ASSIGNS')
                             else:
                                 Print.errorPrint('NOT FOUND ', '[NODE]: {}'.format(part['name']))
 
 
         elif expr['nodeType'] == 'Expr_FuncCall':
-            self.expr_func_call(expr, parent_node, parent_node_type)
+            self.expr_func_call(expr, parent_node, parent_node_type, parent_node)
 
-    def expr_array_dim_fetch(self, expr, parent_node, parent_node_type, relationship_type):
-        # Create the node
-        if not self.graph.find_node(expr['var']['name'], 'VARIABLE'):
-            self.graph.create_node(expr['var']['name'], 'VARIABLE')
+    def expr_array_dim_fetch(self, expr, parent_node, parent_node_type, relationship_type, scope):
+        if expr['var']['name'] == '_GET':
+            if expr['dim']['nodeType'] == 'Scalar_String':
+                # Create the node
+                if not self.graph.find_node('{keyword}{variable_name}'.format(keyword='SCALAR_', variable_name=expr['dim']['value']), '{scope}:{array_type}:VARIABLE'.format(scope=scope, array_type='_GET')):
+                    self.graph.create_node('{keyword}{variable_name}'.format(keyword='SCALAR_', variable_name=expr['dim']['value']), '{scope}:{array_type}:VARIABLE'.format(scope=scope, array_type='_GET'))
 
-        # Create the relationship
-        if not self.graph.find_relationship(parent_node, parent_node_type, expr['var']['name'], 'VARIABLE', relationship_type):
-            self.graph.create_relationship(parent_node, parent_node_type, expr['var']['name'], 'VARIABLE', relationship_type)
+                # Create the relationship
+                if not self.graph.find_relationship(parent_node, parent_node_type, '{keyword}{variable_name}'.format(keyword='SCALAR_', variable_name=expr['dim']['value']), '{scope}:{array_type}:VARIABLE'.format(scope=scope, array_type='_GET'), relationship_type):
+                    self.graph.create_relationship(parent_node, parent_node_type, '{keyword}{variable_name}'.format(keyword='SCALAR_', variable_name=expr['dim']['value']), '{scope}:{array_type}:VARIABLE'.format(scope=scope, array_type='_GET'), relationship_type)
                 
     # Create a function call relationship in > "$result = mysqli_query($con, $query);"
     # It creates just the function call, not the function defineition node
-    def expr_func_call(self, expr, parent_node, parent_node_type):
+    def expr_func_call(self, expr, parent_node, parent_node_type, scope):
         # Create "FUNCTION_CALL" node
-        if not self.graph.find_node(" ".join(expr['name']['parts']), 'FUNCTION_CALL'):
-            self.graph.create_node(" ".join(expr['name']['parts']), 'FUNCTION_CALL')
+        if not self.graph.find_node(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope)):
+            self.graph.create_node(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope))
 
         # Create "FUNCTION_CALL" relationship
-        if not self.graph.find_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), 'FUNCTION_CALL', 'FUNCTION_CALL'):
-            self.graph.create_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), 'FUNCTION_CALL', 'FUNCTION_CALL')
+        if not self.graph.find_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), 'FUNCTION_CALL'):
+            self.graph.create_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), 'FUNCTION_CALL')
 
         if expr['args']:
             for argument in expr['args']:
                 # If argument is a variable, else it should be scalar_string
                 if 'name' in argument['value']:
                     # Create argument node if it is not there
-                    if not self.graph.find_node(argument['value']['name'], 'VARIABLE'):
-                        self.graph.create_node(argument['value']['name'], 'VARIABLE')
+                    if not self.graph.find_node(argument['value']['name'], '{scope}:VARIABLE'.format(scope=scope)):
+                        self.graph.create_node(argument['value']['name'], '{scope}:VARIABLE'.format(scope=scope))
 
                     # Create the "IS_ARGUMENT" relationship
-                    if not self.graph.find_relationship(" ".join(expr['name']['parts']), 'FUNCTION_CALL', argument['value']['name'], 'VARIABLE', 'IS_ARGUMENT'):
-                        self.graph.create_relationship(" ".join(expr['name']['parts']), 'FUNCTION_CALL', argument['value']['name'], 'VARIABLE', 'IS_ARGUMENT')
+                    if not self.graph.find_relationship(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), argument['value']['name'], '{scope}:VARIABLE'.format(scope=scope), 'IS_ARGUMENT'):
+                        self.graph.create_relationship(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), argument['value']['name'], '{scope}:VARIABLE'.format(scope=scope), 'IS_ARGUMENT')
 
     # Create a variable and its relationship
-    def expr_variable(self, expr, parent_node, parent_node_type):
+    def expr_variable(self, expr, parent_node, parent_node_type, scope):
         # Create the variable implementing a relationship with the parent
-        if not self.graph.find_node(expr['var']['name'], 'VARIABLE'):
-            self.graph.create_node(expr['var']['name'], 'VARIABLE')
+        if not self.graph.find_node(expr['var']['name'], '{scope}:VARIABLE'.format(scope=scope)):
+            self.graph.create_node(expr['var']['name'], '{scope}:VARIABLE'.format(scope=scope))
 
         # Create the relationship with the parent
-        if not self.graph.find_relationship(parent_node, parent_node_type, expr['var']['name'], 'VARIABLE', 'IS_VARIABLE'):
-            self.graph.create_relationship(parent_node, parent_node_type, expr['var']['name'], 'VARIABLE', 'IS_VARIABLE')
+        if not self.graph.find_relationship(parent_node, parent_node_type, expr['var']['name'], '{scope}:VARIABLE'.format(scope=scope), 'IS_VARIABLE'):
+            self.graph.create_relationship(parent_node, parent_node_type, expr['var']['name'], '{scope}:VARIABLE'.format(scope=scope), 'IS_VARIABLE')
 
     # Create a node for the FileName
     def filename_node(self, file_name):
