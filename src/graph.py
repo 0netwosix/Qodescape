@@ -17,6 +17,35 @@ class Graph:
         # Don't forget to close the driver connection when you are finished with it
         self.driver.close()
 
+    # Create a node label (label = node_type)
+    def create_node_label(self, existing_labels, new_label, node_name):
+        with self.driver.session() as session:
+            # Write transactions allow the driver to handle retries and transient errors
+            result = session.write_transaction(
+                self._create_and_return_node_label, existing_labels, new_label, node_name)
+            for row in result:
+                Print.dbPrint("CREATED ", "[DB-Node-Label]: {label} ({labels})".format(label=new_label, labels=", ".join(row["labels"])))
+
+    @staticmethod
+    def _create_and_return_node_label(tx, existing_labels, new_label, node_name):
+        # Create a query with given parameters and execute it
+        query = (
+            "MATCH (n:{existing_labels}) ".format(existing_labels=existing_labels)+
+            "WHERE n.name = $node_name "
+            "SET n: {new_label} ".format(new_label=new_label)+
+            "RETURN labels(n) AS labels"
+        )
+        result = tx.run(query, node_name=node_name)
+        try:
+            return [{"labels": row["labels"]}
+                    for row in result]
+        # Capture any errors along with the query and data for traceability
+        except ServiceUnavailable as exception:
+            logging.error("{query} raised an error: \n {exception}".format(
+                query=query, exception=exception))
+            raise
+
+    # Create a node
     def create_node(self, node_name, node_type):
         # pass
         with self.driver.session() as session:
@@ -24,14 +53,14 @@ class Graph:
             result = session.write_transaction(
                 self._create_and_return_node, node_name, node_type)
             for row in result:
-                Print.dbPrint("CREATED ", "[DB-Node]: {node}".format(node=row['p1']))
+                Print.dbPrint("CREATED ", "[DB-Node]: {node}".format(node=row["p1"]))
 
     @staticmethod
     def _create_and_return_node(tx, node_name, node_type):
         # Create a query with given parameters and execute it
         query = (
             "CREATE (p1:{node_type} ".format(node_type=node_type)+
-                "{ name: $node_name }) "
+            "   { name: $node_name }) "
             "RETURN p1"
         )
         result = tx.run(query, node_name=node_name)
@@ -44,6 +73,7 @@ class Graph:
                 query=query, exception=exception))
             raise
 
+    # Create a relationship
     def create_relationship(self, parent_node, parent_node_type, child_node, child_node_type, relationship_type):
         # pass
         with self.driver.session() as session:
@@ -65,7 +95,7 @@ class Graph:
             "   (b:{child_node_type}) ".format(child_node_type=child_node_type)+
             "WHERE a.name = $parent_node AND b.name = $child_node "
             "CREATE (a)-[r:{relationship_type}]->(b) ".format(relationship_type=relationship_type)+
-            "RETURN a,b,type(r) "
+            "RETURN a,b,type(r)"
         )
         result = tx.run(query, parent_node=parent_node, child_node=child_node)
         try:
@@ -131,19 +161,20 @@ class Graph:
                 relationship_type=relationship_type,
                 child_node_type=child_node_type
             )+
-            "WHERE n.name= $parent_node and m.name= $child_node "
-            "RETURN type(r) "
+            "WHERE n.name = $parent_node and m.name = $child_node "
+            "RETURN type(r)"
         )
         result = tx.run(query, parent_node=parent_node, child_node=child_node)
         return [row["type(r)"] for row in result]
 
 def main():
     graph = Graph()
-    # graph.create_node("Test", "Class")
+    # graph.create_node("TEST-1", "MY_NODE")
     # graph.create_node("Request", "Support")
     # graph.create_relationship("Shodan", "Class", "Request", "Support", "USES")
     # graph.find_node("Shodan", "Object")
-    graph.find_relationship('ShodanNotificationController', 'CLASS', 'Controller', 'CLASS', 'EXTENDS')
+    # graph.find_relationship("ShodanNotificationController", "CLASS", "Controller", "CLASS", "EXTENDS")
+    graph.create_node_label("MY_NODE", "ANOTHER_LABEL", "TEST-1")
     graph.close()
 
 if __name__ == "__main__":
