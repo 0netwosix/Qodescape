@@ -85,7 +85,7 @@ def main():
 
     # To get filename 
     global file_name
-    file_name = '{}.php'.format(file_path.split('/')[-1].split('-ast.json')[0])
+    file_name = file_path.split('/')[-1].split('-ast.json')[0]
 
     # If 'namespace' is not there, parent node should be above 'file_name'
     global no_namespace
