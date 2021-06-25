@@ -21,7 +21,7 @@ class NodeType:
             # If the value of the above variable is a "Function call"
             elif expr['expr']['nodeType'] == 'Expr_FuncCall':
                 self.expr_func_call(expr['expr'], expr['var']['name'], 'VARIABLE')
-            # If the value of the above variable is "$GET['id']"
+            # If the value of the above variable is similar to "$GET['id']"
             elif expr['expr']['nodeType'] == 'Expr_ArrayDimFetch':
                 self.expr_array_dim_fetch(expr['expr'], expr['var']['name'], 'VARIABLE', 'ASSIGNS')
             # If the value of the above variable is similar to "select * from `products` where productCode='$prodCode'"
@@ -52,15 +52,15 @@ class NodeType:
             self.graph.create_relationship(parent_node, parent_node_type, expr['var']['name'], 'VARIABLE', relationship_type)
                 
     # Create a function call relationship in > "$result = mysqli_query($con, $query);"
-    # It creates the function if it does not exist
+    # It creates just the function call, not the function defineition node
     def expr_func_call(self, expr, parent_node, parent_node_type):
-        # Create function node
-        if not self.graph.find_node(" ".join(expr['name']['parts']), 'FUNCTION'):
-            self.graph.create_node(" ".join(expr['name']['parts']), 'FUNCTION')
+        # Create "FUNCTION_CALL" node
+        if not self.graph.find_node(" ".join(expr['name']['parts']), 'FUNCTION_CALL'):
+            self.graph.create_node(" ".join(expr['name']['parts']), 'FUNCTION_CALL')
 
         # Create "FUNCTION_CALL" relationship
-        if not self.graph.find_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), 'FUNCTION', 'FUNCTION_CALL'):
-            self.graph.create_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), 'FUNCTION', 'FUNCTION_CALL')
+        if not self.graph.find_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), 'FUNCTION_CALL', 'FUNCTION_CALL'):
+            self.graph.create_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), 'FUNCTION_CALL', 'FUNCTION_CALL')
 
         if expr['args']:
             for argument in expr['args']:
@@ -71,8 +71,8 @@ class NodeType:
                         self.graph.create_node(argument['value']['name'], 'VARIABLE')
 
                     # Create the "IS_ARGUMENT" relationship
-                    if not self.graph.find_relationship(" ".join(expr['name']['parts']), 'FUNCTION', argument['value']['name'], 'VARIABLE', 'IS_ARGUMENT'):
-                        self.graph.create_relationship(" ".join(expr['name']['parts']), 'FUNCTION', argument['value']['name'], 'VARIABLE', 'IS_ARGUMENT')
+                    if not self.graph.find_relationship(" ".join(expr['name']['parts']), 'FUNCTION_CALL', argument['value']['name'], 'VARIABLE', 'IS_ARGUMENT'):
+                        self.graph.create_relationship(" ".join(expr['name']['parts']), 'FUNCTION_CALL', argument['value']['name'], 'VARIABLE', 'IS_ARGUMENT')
 
     # Create a variable and its relationship
     def expr_variable(self, expr, parent_node, parent_node_type):
