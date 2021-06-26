@@ -24,7 +24,7 @@ class Graph:
             result = session.write_transaction(
                 self._create_and_return_node_label, existing_labels, new_label, node_name)
             for row in result:
-                Print.dbPrint("CREATED ", "[DB-Node-Label]: {label} ({labels})".format(label=new_label, labels=", ".join(row["labels"])))
+                Print.dbPrint("[200]", "[DB-Node-Label] CREATED: {label} ({labels})".format(label=new_label, labels=", ".join(row["labels"])))
 
     @staticmethod
     def _create_and_return_node_label(tx, existing_labels, new_label, node_name):
@@ -53,7 +53,7 @@ class Graph:
             result = session.write_transaction(
                 self._create_and_return_node, node_name, node_type)
             for row in result:
-                Print.dbPrint("CREATED ", "[DB-Node]: {node}".format(node=row["p1"]))
+                Print.dbPrint("[200]", "[DB-Node] CREATED: {node}".format(node=row["p1"]))
 
     @staticmethod
     def _create_and_return_node(tx, node_name, node_type):
@@ -81,7 +81,7 @@ class Graph:
             result = session.write_transaction(
                 self._create_and_return_relationship, parent_node, parent_node_type, child_node, child_node_type, relationship_type)
             for row in result:
-                Print.dbPrint("CREATED ", "[DB-Relationship]: {parent} {relationship} {child}".format(
+                Print.dbPrint("[200]", "[DB-Relationship] CREATED: {parent} {relationship} {child}".format(
                     parent=row["a"],
                     relationship=row["r"] , 
                     child=row["b"]))
@@ -114,10 +114,10 @@ class Graph:
             
             if result:
                 for row in result:
-                    Print.dbPrint("FOUND ", "[DB-Node]: {row}".format(row=row))
+                    Print.dbPrint("[200]", "[DB-Node] FOUND: {row}".format(row=row))
                 return True
             else:
-                Print.dbErrorPrint("NOT FOUND ", "[DB-Node]: {node_name}".format(node_name=node_name))
+                Print.dbErrorPrint("[404]", "[DB-Node] N/A: {node_name}".format(node_name=node_name))
                 return False
 
     @staticmethod
@@ -138,14 +138,14 @@ class Graph:
             
             if result:
                 for row in result:
-                    Print.dbPrint("FOUND ", "[DB-Relationship]: {parent_node} {relationship_type} {child_node}".format(
+                    Print.dbPrint("[200]", "[DB-Relationship] FOUND: {parent_node} {relationship_type} {child_node}".format(
                             parent_node=parent_node,
                             relationship_type=row,
                             child_node=child_node
                         ))
                 return True
             else:
-                Print.dbErrorPrint("NOT FOUND ", "[DB-Relationship]: {parent_node} {relationship_type} {child_node}".format(
+                Print.dbErrorPrint("[404]", "[DB-Relationship] N/A: {parent_node} {relationship_type} {child_node}".format(
                         parent_node=parent_node,
                         relationship_type=relationship_type,
                         child_node=child_node
