@@ -67,21 +67,23 @@ def open_file(file_path):
     try:
         current_file = open(file_path, 'r')
     except FileNotFoundError:
-        Print.errorPrint('[ERROR] File not found: ', '{}'.format(file_path))
+        Print.errorPrint('[ERROR] File not found:', '{}'.format(file_path))
         sys.exit(1)
 
     return json.loads(current_file.read())
 
 
 def main():
+    usage_message = 'Usage: ./main.py [file path]'
     if len(sys.argv) == 2:
         if sys.argv[1].lower() == '--help':
-            print('Usage: ./main.py [file path]')
+            print(usage_message)
             sys.exit(1)
         file_path = sys.argv[1]
     else:
-        file_dir = '../test-STs/samples-02/'
-        file_path = file_dir+'LaunchOnDemandScan-with-Shodan-ast.json'
+        Print.errorPrint('[ERROR] No input file given!')
+        print(usage_message)
+        sys.exit(1)
 
     # To get filename 
     global file_name
