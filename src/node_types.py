@@ -37,7 +37,7 @@ class NodeType:
                                 if not self.graph.find_relationship(expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), part['name'], '{scope}:VARIABLE'.format(scope=parent_node), 'ASSIGNS'):
                                     self.graph.create_relationship(expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), part['name'], '{scope}:VARIABLE'.format(scope=parent_node), 'ASSIGNS')
                             else:
-                                Print.errorPrint('NOT FOUND ', '[NODE]: {}'.format(part['name']))
+                                Print.errorPrint('[ERROR] Node not found:', '{}'.format(part['name']))
 
 
         elif expr['nodeType'] == 'Expr_FuncCall':
@@ -131,12 +131,12 @@ class NodeType:
                             self.graph.create_relationship(stmts[-1]['name']['name'], 'CLASS', node['uses'][0]['name']['parts'][-1], 'CLASS', 'USES')
 
                     else:
-                        Print.errorPrint('Different "nodeType": ', '{}'.format(node['nodeType']))
+                        Print.errorPrint('[ERROR] Different "nodeType":', '{}'.format(node['nodeType']))
             else:
-                Print.errorPrint('Last list element is not a "Class" node: ', '{}'.format(stmts[-1]['nodeType']))
+                Print.errorPrint('[ERROR] Last list element is not a "Class" node:', '{}'.format(stmts[-1]['nodeType']))
 
     # Describes "class ClassName extends AnotherClass implements SomeOtherClass"
-    def stmt_class(self, node, parent_node=None, parent_node_type=None, relationship_type=None):
+    def stmt_class(self, node, parent_node, parent_node_type, relationship_type):
         if node['name']['nodeType'] == 'Identifier':
             # Create 'CLASS' node
             if not self.graph.find_node(node['name']['name'], 'CLASS'):
@@ -172,14 +172,14 @@ class NodeType:
             # "statement" represents each line inside the class
             for statement in node['stmts']:
                 if statement['nodeType'] == 'Stmt_ClassMethod':
-                    self.stmt_class_method(statement, node['name']['name'], 'CLASS', 'IS_CLASS_METHOD')
+                    self.stmt_class_method(statement, node['name']['name'], 'CLASS', 'IS_CLASS_METHOD', node['name']['name'])
 
     # Describes a class method
-    def stmt_class_method(self, node, parent_node=None, parent_node_type=None, relationship_type=None):
+    def stmt_class_method(self, node, parent_node, parent_node_type, relationship_type, scope):
         # Create 'CLASS_METHOD' node
-        if not self.graph.find_node(node['name']['name'], 'CLASS_METHOD'):
-            self.graph.create_node(node['name']['name'], 'CLASS_METHOD')
+        if not self.graph.find_node(node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope)):
+            self.graph.create_node(node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope))
 
         # Create 'CLASS_METHOD IS_CLASS_METHOD of Class' relatioship
-        if not self.graph.find_relationship(parent_node, parent_node_type, node['name']['name'], 'CLASS_METHOD', relationship_type):
-            self.graph.create_relationship(parent_node, parent_node_type, node['name']['name'], 'CLASS_METHOD', relationship_type)   
+        if not self.graph.find_relationship(parent_node, parent_node_type, node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope), relationship_type):
+            self.graph.create_relationship(parent_node, parent_node_type, node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope), relationship_type)   
