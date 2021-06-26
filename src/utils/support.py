@@ -6,7 +6,7 @@ class Print:
     # Green text
     @staticmethod
     def dbPrint(colored_message, message=''):
-        print("{colored_message} {message}".format(
+        print("{colored_message}\t{message}".format(
             colored_message=colored(colored_message, 'green'),
             message=message
         ))
@@ -14,7 +14,7 @@ class Print:
     # Yellow text
     @staticmethod
     def dbErrorPrint(colored_message, message=''):
-        print("{colored_message} {message}".format(
+        print("{colored_message}\t{message}".format(
             colored_message=colored(colored_message, 'yellow'),
             message=message
         ))
