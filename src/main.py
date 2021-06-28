@@ -48,6 +48,9 @@ def read_object(slice):
             if value == 'Stmt_Expression':
                 # Parent node is considered as 'file_name'
                 node_type.stmt_expression(slice['expr'], file_name, 'FILENAME')
+            elif value == 'Stmt_Echo':
+                # Parent node is considered as 'file_name'
+                node_type.stmt_echo(slice['exprs'], file_name, 'FILENAME', file_name)
 
         elif type(value) is dict:
             print('[main] DICT: {} -> {}'.format(key ,value.keys()))
