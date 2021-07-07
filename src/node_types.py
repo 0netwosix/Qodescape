@@ -54,9 +54,9 @@ class NodeType:
                             if not self.graph.find_relationship(parent_node, parent_node_type, expr['name'], '{scope}:VARIABLE'.format(scope=scope), 'ECHO'):
                                 self.graph.create_relationship(parent_node, parent_node_type, expr['name'], '{scope}:VARIABLE'.format(scope=scope), 'ECHO')
                         else:
-                            Print.errorPrint('[ERROR] Node not found:', '{}'.format(expr['name']))
+                            Print.error_print('[ERROR]', 'Node not found: {}'.format(expr['name']))
                     else:
-                        Print.errorPrint('[ERROR] Node not found:', '{}'.format(parent_node))
+                        Print.error_print('[ERROR]', 'Node not found: {}'.format(parent_node))
 
     # Describes a value like "<pre>Hello ${name}</pre>";
     def scalar_encapsed(self, expr, parent_node, parent_node_type, relationship_type, scope):
@@ -71,7 +71,7 @@ class NodeType:
                         if not self.graph.find_relationship(parent_node, parent_node_type, part['name'], '{scope}:VARIABLE'.format(scope=scope), relationship_type):
                             self.graph.create_relationship(parent_node, parent_node_type, part['name'], '{scope}:VARIABLE'.format(scope=scope), relationship_type)
                     else:
-                        Print.errorPrint('[ERROR] Node not found:', '{}'.format(part['name']))
+                        Print.error_print('[ERROR]', 'Node not found: {}'.format(part['name']))
 
     # Describes $_GET[], $_POST[], $_REQUEST[] statements
     def expr_array_dim_fetch(self, expr, parent_node, parent_node_type, relationship_type, scope, array_type):
@@ -186,9 +186,9 @@ class NodeType:
                             self.graph.create_relationship(stmts[-1]['name']['name'], 'CLASS', node['uses'][0]['name']['parts'][-1], 'CLASS', 'USES')
 
                     else:
-                        Print.errorPrint('[ERROR] Different "nodeType":', '{}'.format(node['nodeType']))
+                        Print.error_print('[ERROR]', 'Different "nodeType": {}'.format(node['nodeType']))
             else:
-                Print.errorPrint('[ERROR] Last list element is not a "Class" node:', '{}'.format(stmts[-1]['nodeType']))
+                Print.error_print('[ERROR]', 'Last list element is not a "Class" node: {}'.format(stmts[-1]['nodeType']))
 
     # Describes "class ClassName extends AnotherClass implements SomeOtherClass"
     def stmt_class(self, node, parent_node, parent_node_type, relationship_type):

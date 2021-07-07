@@ -3,9 +3,19 @@
 from termcolor import colored
 
 class Print:
+    ''' Sample output,
+        DB output:
+        [200]   [DB-Node] FOUND: index_exec
+        ------------------------------------
+        Normal script output:
+        [PASS]  ast Directory created: ../test-projects/test-1/ast
+
+        Output keywords:
+        [FAIL] [PASS] [WARN] [SKIP] [INFO]
+    '''
     # Green text
     @staticmethod
-    def dbPrint(colored_message, message=''):
+    def success_print(colored_message, message=''):
         print("{colored_message}\t{message}".format(
             colored_message=colored(colored_message, 'green'),
             message=message
@@ -13,7 +23,7 @@ class Print:
 
     # Yellow text
     @staticmethod
-    def dbErrorPrint(colored_message, message=''):
+    def info_print(colored_message, message=''):
         print("{colored_message}\t{message}".format(
             colored_message=colored(colored_message, 'yellow'),
             message=message
@@ -21,8 +31,8 @@ class Print:
 
     # Red text
     @staticmethod
-    def errorPrint(colored_message, message=''):
-        print("{colored_message} {message}".format(
+    def error_print(colored_message, message=''):
+        print("{colored_message}\t{message}".format(
             colored_message=colored(colored_message, 'red'),
             message=message
         ))

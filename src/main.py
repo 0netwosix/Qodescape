@@ -70,7 +70,7 @@ def open_file(file_path):
     try:
         current_file = open(file_path, 'r')
     except FileNotFoundError:
-        Print.errorPrint('[ERROR] File not found:', '{}'.format(file_path))
+        Print.error_print('[FAIL]', 'File not found: {}'.format(file_path))
         sys.exit(1)
 
     return json.loads(current_file.read())
@@ -84,7 +84,7 @@ def main():
             sys.exit(1)
         file_path = sys.argv[1]
     else:
-        Print.errorPrint('[ERROR] No input file given!')
+        Print.error_print('[FAIL]', 'No input file given')
         print(usage_message)
         sys.exit(1)
 
