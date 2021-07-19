@@ -6,6 +6,92 @@ class NodeType:
     def __init__(self, graph):
         self.graph = graph
 
+    # Generate a label looks like "if_line_26", "while_line_26"
+    # To seperately identify each block (when having multiple "if" in same file)
+    def generate_block_name_by_line(self, line_number, block_type):
+        return ('{block_type}_line_{line_number}'.format(block_type=block_type, line_number=line_number))
+
+    # Describes a If block
+    def stmt_if(self, slice, parent_node, parent_node_type):
+        if slice['cond']['attributes']['startLine']:
+            if_node_type = '{parent_node}:IF'.format(parent_node=parent_node)
+            if_node_name = self.generate_block_name_by_line(slice['cond']['attributes']['startLine'], 'IF')
+
+            # Create If block node
+            if not self.graph.find_node(if_node_name, if_node_type):
+                self.graph.create_node(if_node_name, if_node_type)
+
+            # Create If_block relationship with parent
+            if not self.graph.find_relationship(parent_node, parent_node_type, if_node_name, if_node_type, 'IF_BLOCK'):
+                self.graph.create_relationship(parent_node, parent_node_type, if_node_name, if_node_type, 'IF_BLOCK')
+
+            # Describes statements inside the IF block
+            if slice['stmts']:
+                for stmt in slice['stmts']:
+                    # If the statement is a While block
+                    if stmt['nodeType'] == 'Stmt_While':
+                        self.stmt_while(stmt, if_node_name, if_node_type, '{this_node}:{parent_scope}'.format(this_node=if_node_name, parent_scope=parent_node))
+
+            # Describes the Else block
+            if slice['else']:
+                if slice['else']['nodeType'] == 'Stmt_Else':
+                    self.stmt_else(slice['else'], if_node_name, if_node_type, '{this_node}:{parent_scope}'.format(this_node=if_node_name, parent_scope=parent_node))
+        
+            # Describes the ELSE IF block
+            if slice['elseifs']:
+                pass
+        
+        else:
+            Print.error_print('[ERROR]', 'Issue in "If[conditions][attributes]"')
+
+    # Describes a Else block
+    def stmt_else(self, slice, parent_node, parent_node_type, scope):
+        if slice['attributes']['startLine']:
+            else_node_type = 'ELSE:{scope}'.format(parent_node=parent_node, scope=scope)
+            else_node_name = self.generate_block_name_by_line(slice['attributes']['startLine'], 'ELSE')
+
+             # Create Else block node
+            if not self.graph.find_node(else_node_name, else_node_type):
+                self.graph.create_node(else_node_name, else_node_type)
+
+            # Create Else_block relationship with parent
+            if not self.graph.find_relationship(parent_node, parent_node_type, else_node_name, else_node_type, 'ELSE_BLOCK'):
+                self.graph.create_relationship(parent_node, parent_node_type, else_node_name, else_node_type, 'ELSE_BLOCK')
+
+            # Describes statements inside the ELSE block
+            if slice['stmts']:
+                for stmt in slice['stmts']:
+                    # If the statement is an echo
+                    if stmt['nodeType'] == 'Stmt_Echo':
+                        self.stmt_echo(stmt['exprs'], else_node_name, else_node_type, '{this_node}:{parent_scope}'.format(this_node=else_node_name, parent_scope=scope))
+        else:
+            Print.error_print('[ERROR]', 'Issue in "Else[attributes]"')
+
+
+    # Describes a While block
+    def stmt_while(self, slice, parent_node, parent_node_type, scope):
+        if slice['cond']['attributes']['startLine']:
+            while_node_type = 'WHILE:{scope}'.format(parent_node=parent_node, scope=scope)
+            while_node_name = self.generate_block_name_by_line(slice['cond']['attributes']['startLine'], 'WHILE')
+
+            # Create While block node
+            if not self.graph.find_node(while_node_name, while_node_type):
+                self.graph.create_node(while_node_name, while_node_type)
+
+            # Create While_block relationship with parent
+            if not self.graph.find_relationship(parent_node, parent_node_type, while_node_name, while_node_type, 'WHILE_BLOCK'):
+                self.graph.create_relationship(parent_node, parent_node_type, while_node_name, while_node_type, 'WHILE_BLOCK')
+
+            # Describes statements inside the WHILE block
+            if slice['stmts']:
+                for stmt in slice['stmts']:
+                    pass
+        else:
+            Print.error_print('[ERROR]', 'Issue in "While[conditions][attributes]"')
+        
+
+    # Describes a whole line inside the code
+    # eg: value assignment, function call
     def stmt_expression(self, expr, parent_node, parent_node_type):
         if expr['nodeType'] == 'Expr_Assign':
             # Create the variable and its relationship with the parent node
@@ -45,6 +131,7 @@ class NodeType:
     def stmt_echo(self, exprs, parent_node, parent_node_type, scope):
         if exprs:
             for expr in exprs:
+                # If Echo ing a variable
                 if expr['nodeType'] == 'Expr_Variable':
                     # Check if the parent node is available
                     if self.graph.find_node(parent_node, parent_node_type):
@@ -55,6 +142,18 @@ class NodeType:
                                 self.graph.create_relationship(parent_node, parent_node_type, expr['name'], '{scope}:VARIABLE'.format(scope=scope), 'ECHO')
                         else:
                             Print.error_print('[ERROR]', 'Node not found: {}'.format(expr['name']))
+                    else:
+                        Print.error_print('[ERROR]', 'Node not found: {}'.format(parent_node))
+                # If Echo ing a function call
+                elif expr['nodeType'] == 'Expr_FuncCall':
+                    # Check if the parent node is available
+                    if self.graph.find_node(parent_node, parent_node_type):
+                        # Create the function_call node if not available in the scope
+                        self.expr_func_call(expr, parent_node, parent_node_type, scope)
+
+                        # Check if 'ECHO' relationship exists
+                        if not self.graph.find_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), 'ECHO'):
+                            self.graph.create_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), 'ECHO')
                     else:
                         Print.error_print('[ERROR]', 'Node not found: {}'.format(parent_node))
 
