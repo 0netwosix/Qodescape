@@ -45,12 +45,16 @@ def read_object(slice):
                 # If true, parent_node = file_name
                 no_namespace = True
 
-            if value == 'Stmt_Expression':
+            if value == 'Stmt_Class':
+                node_type.stmt_class(slice, file_name, 'FILENAME', 'CONTAINS')
+            elif value == 'Stmt_Expression':
                 # Parent node is considered as 'file_name'
                 node_type.stmt_expression(slice['expr'], file_name, 'FILENAME')
             elif value == 'Stmt_Echo':
                 # Parent node is considered as 'file_name'
                 node_type.stmt_echo(slice['exprs'], file_name, 'FILENAME', file_name)
+            elif value == 'Stmt_If':
+                node_type.stmt_if(slice, file_name, 'FILENAME')
 
         elif type(value) is dict:
             print('[main] DICT: {} -> {}'.format(key ,value.keys()))
