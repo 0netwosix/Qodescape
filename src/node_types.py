@@ -12,9 +12,9 @@ class NodeType:
         return ('{block_type}_line_{line_number}'.format(block_type=block_type, line_number=line_number))
 
     # Describes a If block
-    def stmt_if(self, slice, parent_node, parent_node_type):
+    def stmt_if(self, slice, parent_node, parent_node_type, scope):
         if slice['cond']['attributes']['startLine']:
-            if_node_type = '{parent_node}:IF'.format(parent_node=parent_node)
+            if_node_type = '{scope}:IF'.format(scope=scope)
             if_node_name = self.generate_block_name_by_line(slice['cond']['attributes']['startLine'], 'IF')
 
             # Create If block node
@@ -92,40 +92,54 @@ class NodeType:
 
     # Describes a whole line inside the code
     # eg: value assignment, function call
-    def stmt_expression(self, expr, parent_node, parent_node_type):
+    def stmt_expression(self, expr, parent_node, parent_node_type, scope):
         if expr['nodeType'] == 'Expr_Assign':
+            variable_decalred = False
             # Create the variable and its relationship with the parent node
             if expr['var']['nodeType'] == 'Expr_Variable':
-                self.expr_variable(expr, parent_node, parent_node_type, parent_node)
+                self.expr_variable(expr, parent_node, parent_node_type, scope)
+                variable_decalred = True
+            # Describes "$this->variable = $variable;"
+            elif expr['var']['nodeType'] == 'Expr_PropertyFetch':
+                if expr['var']['var']['nodeType'] == 'Expr_Variable' and expr['var']['var']['name'] == 'this':
+                    tmp_expr = {
+                        'var': {
+                            'name': expr['var']['name']['name']
+                        }
+                    }
+                    self.expr_variable(tmp_expr, parent_node, parent_node_type, scope)
+                    variable_decalred = True
 
             ''' Following describes the value of above variable
             '''
-            # If the value of above variable is a "String"
-            if expr['expr']['nodeType'] == 'Scalar_String':
-                # Need to decide
-                pass
-            # If the value of the above variable is a "Function call"
-            elif expr['expr']['nodeType'] == 'Expr_FuncCall':
-                self.expr_func_call(expr['expr'], expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), parent_node)
-            # If the value of the above variable is similar to "$GET['id']"
-            elif expr['expr']['nodeType'] == 'Expr_ArrayDimFetch':
-                self.expr_array_dim_fetch(expr['expr'], expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), 'ASSIGNS', parent_node, expr['expr']['var']['name'])
-            # If the value of the above variable is similar to "select * from `products` where productCode='$prodCode'"
-            elif expr['expr']['nodeType'] == 'Scalar_Encapsed':
-                self.scalar_encapsed(expr['expr'], expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), 'ASSIGNS', parent_node)
+            # If the varibale node is not created, the value node won't be created as well
+            if variable_decalred:
+                # If the value of above variable is a "String"
+                if expr['expr']['nodeType'] == 'Scalar_String':
+                    # Need to decide
+                    pass
+                # If the value of the above variable is a "Function call"
+                elif expr['expr']['nodeType'] == 'Expr_FuncCall':
+                    self.expr_func_call(expr['expr'], expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), scope)
+                # If the value of the above variable is similar to "$GET['id']"
+                elif expr['expr']['nodeType'] == 'Expr_ArrayDimFetch':
+                    self.expr_array_dim_fetch(expr['expr'], expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), 'ASSIGNS', scope, expr['expr']['var']['name'])
+                # If the value of the above variable is similar to "select * from `products` where productCode='$prodCode'"
+                elif expr['expr']['nodeType'] == 'Scalar_Encapsed':
+                    self.scalar_encapsed(expr['expr'], expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), 'ASSIGNS', scope)
 
         elif expr['nodeType'] == 'Expr_FuncCall':
-            self.expr_func_call(expr, parent_node, parent_node_type, parent_node)
+            self.expr_func_call(expr, parent_node, parent_node_type, scope)
         elif expr['nodeType'] == 'Expr_AssignOp_Concat':
             if expr['var']['nodeType'] == 'Expr_Variable':
                 # Create the variable and its relationship with the parent node
-                self.expr_variable(expr, parent_node, parent_node_type, parent_node)
+                self.expr_variable(expr, parent_node, parent_node_type, scope)
 
                 ''' Following describes the value of above variable
                 '''
                 # If the value of the above variable is similar to "<pre>Hello ${name}</pre>";
                 if expr['expr']['nodeType'] == 'Scalar_Encapsed':
-                    self.scalar_encapsed(expr['expr'], expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), 'ASSIGNS', parent_node)
+                    self.scalar_encapsed(expr['expr'], expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), 'ASSIGNS', scope)
 
     # Describes "echo()"
     def stmt_echo(self, exprs, parent_node, parent_node_type, scope):
@@ -230,7 +244,6 @@ class NodeType:
                                 if not self.graph.find_relationship(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), argument['value']['right']['name'], '{scope}:VARIABLE'.format(scope=scope), 'IS_ARGUMENT'):
                                     self.graph.create_relationship(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), argument['value']['right']['name'], '{scope}:VARIABLE'.format(scope=scope), 'IS_ARGUMENT')
 
-
     # Create a variable and its relationship
     def expr_variable(self, expr, parent_node, parent_node_type, scope):
         # Create the variable implementing a relationship with the parent
@@ -240,6 +253,50 @@ class NodeType:
         # Create the relationship with the parent
         if not self.graph.find_relationship(parent_node, parent_node_type, expr['var']['name'], '{scope}:VARIABLE'.format(scope=scope), 'IS_VARIABLE'):
             self.graph.create_relationship(parent_node, parent_node_type, expr['var']['name'], '{scope}:VARIABLE'.format(scope=scope), 'IS_VARIABLE')
+
+    # Describes a global variables in a file. 
+    # e.g. "global $CFG;"
+    def stmt_global(self, vars, parent_node, parent_node_type, scope):
+        # nodeType          -> GLOBAL_VARIABLE
+        # relationshipType  -> IS_GLOBAL_VARIABLE
+        if vars:
+            for var in vars:
+                if var['nodeType'] == 'Expr_Variable':
+                    # Create 'GLOBAL_VARIABLE' node
+                    if not self.graph.find_node(var['name'], '{scope}:GLOBAL_VARIABLE'.format(scope=scope)):
+                        self.graph.create_node(var['name'], '{scope}:GLOBAL_VARIABLE'.format(scope=scope))
+
+                    # Create 'Filename -> IS_GLOBAL_VARIABLE -> GLOBAL_VARIABLE'
+                    if not self.graph.find_relationship(parent_node, parent_node_type, var['name'], '{scope}:GLOBAL_VARIABLE'.format(scope=scope), 'IS_GLOBAL_VARIABLE'):
+                        self.graph.create_relationship(parent_node, parent_node_type, var['name'], '{scope}:GLOBAL_VARIABLE'.format(scope=scope), 'IS_GLOBAL_VARIABLE')
+
+    # Describes a class constant 
+    # e.g. "const PREVIEWCOLUMNSLIMIT = 10;"
+    def stmt_class_const(self, consts, parent_node, parent_node_type, scope):
+        if consts:
+            for const in consts:
+                # Create 'CLASS_CONSTANT' node
+                if not self.graph.find_node(const['name']['name'], '{scope}:CLASS_CONSTANT'.format(scope=scope)):
+                    self.graph.create_node(const['name']['name'], '{scope}:CLASS_CONSTANT'.format(scope=scope))
+
+                # Create 'Class -> IS_CLASS_CONSTANT -> CLASS_CONSTANT'
+                if not self.graph.find_relationship(parent_node, parent_node_type, const['name']['name'], '{scope}:CLASS_CONSTANT'.format(scope=scope), 'IS_CLASS_CONSTANT'):
+                    self.graph.create_relationship(parent_node, parent_node_type, const['name']['name'], '{scope}:CLASS_CONSTANT'.format(scope=scope), 'IS_CLASS_CONSTANT')
+
+    # Describes a protected variable
+    # e.g. "protected $feedbackstructure;"
+    def stmt_property(self, props, parent_node, parent_node_type, scope):
+        if props:
+            for prop in props:
+                if prop['name']['nodeType'] == 'VarLikeIdentifier':
+                    # Create 'PROTECTED_VARIABLE' node
+                    if not self.graph.find_node(prop['name']['name'], '{scope}:PROTECTED_VARIABLE'.format(scope=scope)):
+                        self.graph.create_node(prop['name']['name'], '{scope}:PROTECTED_VARIABLE'.format(scope=scope))
+
+                    # Create 'Class -> IS_PROTECTED_VARIABLE -> PROTECTED_VARIABLE'
+                    if not self.graph.find_relationship(parent_node, parent_node_type, prop['name']['name'], '{scope}:PROTECTED_VARIABLE'.format(scope=scope), 'IS_PROTECTED_VARIABLE'):
+                        self.graph.create_relationship(parent_node, parent_node_type, prop['name']['name'], '{scope}:PROTECTED_VARIABLE'.format(scope=scope), 'IS_PROTECTED_VARIABLE')
+
 
     # Create a node for the FileName
     def filename_node(self, file_name):
@@ -261,7 +318,7 @@ class NodeType:
             # Create the "Class" node first if exist
             # In theory last array object should be the class declaration as it how syntax is arranged
             if stmts[-1]['nodeType'] == 'Stmt_Class':
-                self.stmt_class(stmts[-1], namespace_name, 'NAMESPACE', 'CONTAINS')
+                self.stmt_class(stmts[-1], namespace_name, 'NAMESPACE', 'CONTAINS', namespace_name)
 
                 for node in stmts:
                     if node['nodeType'] == 'Stmt_Class':
@@ -290,7 +347,10 @@ class NodeType:
                 Print.error_print('[ERROR]', 'Last list element is not a "Class" node: {}'.format(stmts[-1]['nodeType']))
 
     # Describes "class ClassName extends AnotherClass implements SomeOtherClass"
-    def stmt_class(self, node, parent_node, parent_node_type, relationship_type):
+    def stmt_class(self, node, parent_node, parent_node_type, relationship_type, scope):
+        # Labels that denote the scope of the class
+        stmt_class_type = '{scope}:CLASS'.format(scope=scope)
+
         if node['name']['nodeType'] == 'Identifier':
             # Create 'CLASS' node
             if not self.graph.find_node(node['name']['name'], 'CLASS'):
@@ -327,6 +387,10 @@ class NodeType:
             for statement in node['stmts']:
                 if statement['nodeType'] == 'Stmt_ClassMethod':
                     self.stmt_class_method(statement, node['name']['name'], 'CLASS', 'IS_CLASS_METHOD', node['name']['name'])
+                elif statement['nodeType'] == 'Stmt_ClassConst':
+                    self.stmt_class_const(statement['consts'], node['name']['name'], 'CLASS', node['name']['name'])
+                elif statement['nodeType'] == 'Stmt_Property':
+                    self.stmt_property(statement['props'], node['name']['name'], 'CLASS', node['name']['name'])
 
     # Describes a class method
     def stmt_class_method(self, node, parent_node, parent_node_type, relationship_type, scope):
@@ -337,3 +401,23 @@ class NodeType:
         # Create 'CLASS_METHOD IS_CLASS_METHOD of Class' relatioship
         if not self.graph.find_relationship(parent_node, parent_node_type, node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope), relationship_type):
             self.graph.create_relationship(parent_node, parent_node_type, node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope), relationship_type)   
+
+        # Describes method parameters
+        if node['params']:
+            for param in node['params']:
+                if param['var']['nodeType'] == 'Expr_Variable':
+                    # Create 'PARAM' node
+                    if not self.graph.find_node(param['var']['name'], '{scope}:{class_method}:PARAM'.format(scope=scope, class_method=node['name']['name'])):
+                        self.graph.create_node(param['var']['name'], '{scope}:{class_method}:PARAM'.format(scope=scope, class_method=node['name']['name']))
+
+                    # Create 'CLASS_METHOD -> IS_PARAM -> PARAM'
+                    if not self.graph.find_relationship(node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope), param['var']['name'], '{scope}:{class_method}:PARAM'.format(scope=scope, class_method=node['name']['name']), 'IS_PARAM'):
+                        self.graph.create_relationship(node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope), param['var']['name'], '{scope}:{class_method}:PARAM'.format(scope=scope, class_method=node['name']['name']), 'IS_PARAM')
+
+        # Describes the statements inside the method
+        if node['stmts']:
+            for stmt in node['stmts']:
+                if stmt['nodeType'] == 'Stmt_Expression':
+                    self.stmt_expression(stmt['expr'], node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope), '{scope}:{class_method}'.format(scope=scope, class_method=node['name']['name']))
+                elif stmt['nodeType'] == 'Stmt_If':
+                    self.stmt_if(stmt, node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope), '{scope}:{class_method}'.format(scope=scope, class_method=node['name']['name']))
