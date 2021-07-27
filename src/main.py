@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
-import sys
+import argparse
 import json
+import sys
 from graph import Graph
 from node_types import NodeType
 from utils.support import Print
@@ -45,16 +46,18 @@ def read_object(slice):
                 # If true, parent_node = file_name
                 no_namespace = True
 
-            if value == 'Stmt_Class':
-                node_type.stmt_class(slice, file_name, 'FILENAME', 'CONTAINS')
+            if value == 'Stmt_Global':
+                node_type.stmt_global(slice['vars'], file_name, 'FILENAME', file_name)
+            elif value == 'Stmt_Class':
+                node_type.stmt_class(slice, file_name, 'FILENAME', 'CONTAINS', file_name)
             elif value == 'Stmt_Expression':
                 # Parent node is considered as 'file_name'
-                node_type.stmt_expression(slice['expr'], file_name, 'FILENAME')
+                node_type.stmt_expression(slice['expr'], file_name, 'FILENAME', file_name)
             elif value == 'Stmt_Echo':
                 # Parent node is considered as 'file_name'
                 node_type.stmt_echo(slice['exprs'], file_name, 'FILENAME', file_name)
             elif value == 'Stmt_If':
-                node_type.stmt_if(slice, file_name, 'FILENAME')
+                node_type.stmt_if(slice, file_name, 'FILENAME', file_name)
 
         elif type(value) is dict:
             print('[main] DICT: {} -> {}'.format(key ,value.keys()))
@@ -79,18 +82,16 @@ def open_file(file_path):
 
     return json.loads(current_file.read())
 
+def init_argparse():
+    parser = argparse.ArgumentParser(description='Parse PHP Abstract Syntax Tree (AST) into a Neo4j Graph.')
+    parser.add_argument('file', help='File you need to parse')
+    return parser
 
 def main():
-    usage_message = 'Usage: ./main.py [file path]'
-    if len(sys.argv) == 2:
-        if sys.argv[1].lower() == '--help':
-            print(usage_message)
-            sys.exit(1)
-        file_path = sys.argv[1]
-    else:
-        Print.error_print('[FAIL]', 'No input file given')
-        print(usage_message)
-        sys.exit(1)
+    parser = init_argparse()
+    args = parser.parse_args()
+
+    file_path = args.file
 
     # To get filename 
     global file_name
