@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import sys
 from utils.support import Print
 
 # Generate graph from AST
@@ -30,16 +31,36 @@ def read_dir(directory):
 
 def init_argparse():
     parser = argparse.ArgumentParser(description='Parse PHP Abstract Syntax Tree (AST) into a Neo4j Graph.')
-    parser.add_argument('dir', help='The directory containing AST (file-ast.json) files')
+    parser.add_argument('path', help='path to AST (file-ast.json) file OR to directory')
+    parser.add_argument('-f', '--file', action='store_true', help='a file path is given')
+    parser.add_argument('-d', '--dir', action='store_true', help='a directory path is given')
     return parser
 
 def main():
     parser = init_argparse()
     args = parser.parse_args()
 
-    directory = args.dir
+    path = args.path
 
-    read_dir(directory)
+    if not (args.file and args.dir):
+        if args.file:
+            if os.path.isfile(path):
+                generate_graph(path)
+            else:
+                Print.error_print('[FAIL]', 'Not a file: {path}'.format(path=path))
+                sys.exit(1)
+        elif args.dir:
+            if os.path.isdir(path):
+                read_dir(path)
+            else:
+                Print.error_print('[FAIL]', 'Not a directory: {path}'.format(path=path))
+                sys.exit(1)
+        else:
+            Print.error_print('[FAIL]', 'Check optional arguments')
+            sys.exit(1)
+    else:
+        Print.error_print('[FAIL]', 'Check optional arguments')
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
