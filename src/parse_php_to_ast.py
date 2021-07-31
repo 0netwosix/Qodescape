@@ -3,6 +3,7 @@
 import argparse
 import os
 import sys
+import time
 from utils.support import Print
 
 # Run "php-parse" command and generate [FILENAME]-ast.json
@@ -47,19 +48,26 @@ def init_argparse():
 def main():
     parser = init_argparse()
     args = parser.parse_args()
+    duration = 0
 
     path = args.path
 
     if not (args.file and args.dir):
         if args.file:
             if os.path.isfile(path):
+                start = time.time()
                 generate_ast_file(path)
+                end = time.time()
+                duration = end - start
             else:
                 Print.error_print('[FAIL]', 'Not a file: {path}'.format(path=path))
                 sys.exit(1)
         elif args.dir:
             if os.path.isdir(path):
+                start = time.time()
                 read_dir(path)
+                end = time.time()
+                duration = end - start
             else:
                 Print.error_print('[FAIL]', 'Not a directory: {path}'.format(path=path))
                 sys.exit(1)
@@ -70,6 +78,7 @@ def main():
         Print.error_print('[FAIL]', 'Check optional arguments')
         sys.exit(1)
 
+    Print.time_print(' Time taken: {duration}s '.format(duration=round(duration, 3)))
 
 if __name__ == '__main__':
     main()

@@ -36,3 +36,11 @@ class Print:
             colored_message=colored(colored_message, 'red'),
             message=message
         ))
+
+    # Bold white text in red background
+    @staticmethod
+    def time_print(colored_message, message=''):
+        print("{colored_message}\t{message}".format(
+            colored_message=colored(colored_message, 'white', 'on_red', ['bold']),
+            message=message
+        ))
