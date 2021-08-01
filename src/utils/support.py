@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 from termcolor import colored
 
 class Print:
