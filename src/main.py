@@ -8,7 +8,6 @@ from graph import Graph
 from nodetypes.init import NodeType
 from utils.support import Print
 
-
 # To go inside each nested dictionary and get its 'nodeType'
 # def test_read_object(slice):
 #     for key, value in slice.items():
