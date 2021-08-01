@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
-from neo4j import GraphDatabase
 import logging
+from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
+
 from utils.support import Print
 
 class Graph:
@@ -169,12 +170,12 @@ class Graph:
 
 def main():
     graph = Graph()
-    # graph.create_node("TEST-1", "MY_NODE")
+    # graph.create_node("TEST-1", "MY_NODE:line_26")
     # graph.create_node("Request", "Support")
     # graph.create_relationship("Shodan", "Class", "Request", "Support", "USES")
     # graph.find_node("Shodan", "Object")
     # graph.find_relationship("ShodanNotificationController", "CLASS", "Controller", "CLASS", "EXTENDS")
-    graph.create_node_label("MY_NODE", "ANOTHER_LABEL", "TEST-1")
+    # graph.create_node_label("MY_NODE", "ANOTHER_LABEL", "TEST-1")
     graph.close()
 
 if __name__ == "__main__":
