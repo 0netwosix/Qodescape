@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 import time
+
 from utils.support import Print
 
 # Generate graph from AST

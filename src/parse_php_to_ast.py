@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 import time
+
 from utils.support import Print
 
 # Run "php-parse" command and generate [FILENAME]-ast.json
