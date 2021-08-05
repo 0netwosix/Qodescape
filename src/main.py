@@ -11,7 +11,7 @@ from utils.support import Print
 # To go inside each nested dictionary and get its 'nodeType'
 # def test_read_object(slice):
 #     for key, value in slice.items():
-#         # print('KEY: {}'.format(key))
+#         # Print.clear_print('KEY: {}'.format(key))
 #         if isinstance(value, dict):
 #             if key != 'attributes':
 #                 test_read_object(value)
@@ -21,7 +21,7 @@ from utils.support import Print
 #                     test_read_object(item)
 #         else:
 #             # if key == 'nodeType':
-#             print('[test] KEY: {} -> {}'.format(key, value))
+#             Print.clear_print('[test] KEY: {} -> {}'.format(key, value))
             
 
 # Read the given array object from iterateObjects()
@@ -29,7 +29,7 @@ def read_object(slice):
     # Iterate through each key in current object
     for key, value in slice.items():
         if key == 'nodeType':
-            print('[main] KEY: {} -> {}'.format(key, value))
+            Print.clear_print('[main] KEY: {} -> {}'.format(key, value))
 
             # nodeType: "Stmt_InlineHTML"
             if value == 'Stmt_InlineHTML':
@@ -61,9 +61,9 @@ def read_object(slice):
                 node_type.stmt_if(slice, file_name, 'FILENAME', file_name)
 
         elif type(value) is dict:
-            print('[main] DICT: {} -> {}'.format(key ,value.keys()))
+            Print.clear_print('[main] DICT: {} -> {}'.format(key ,value.keys()))
         else:
-            print('[main] KEY: {}'.format(key))
+            Print.clear_print('[main] KEY: {}'.format(key))
             
 
 # Iterate through each json array object
@@ -71,7 +71,7 @@ def iterate_objects(current_file_json):
     # slice eaquals to each object in json
     for slice in current_file_json:
         read_object(slice)
-        print('-----------------------------------')
+        Print.clear_print('-----------------------------------')
 
 # Opens the given file and return a json
 def open_file(file_path):

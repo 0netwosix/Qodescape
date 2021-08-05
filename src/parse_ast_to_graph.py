@@ -13,7 +13,7 @@ def generate_graph(file_path):
 
     Print.info_print('[INFO]', 'Command running: {command}'.format(command=command))
     os.system(command)
-    print('\n')
+    Print.clear_print('\n')
 
 # Read a given directory
 def read_dir(directory):
