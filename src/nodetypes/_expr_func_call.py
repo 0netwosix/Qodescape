@@ -1,5 +1,8 @@
+from utils.support import Print
+
 # Create a function call relationship in > "$result = mysqli_query($con, $query);"
 # It creates just the function call, not the function defineition node
+# Function call is a call for a function that is defined in another file
 def expr_func_call(self, expr, parent_node, parent_node_type, scope):
     # Create "FUNCTION_CALL" node
     if not self.graph.find_node(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope)):
@@ -14,13 +17,20 @@ def expr_func_call(self, expr, parent_node, parent_node_type, scope):
             # If the argument is a variable
             if 'nodeType' in argument['value'] and argument['value']['nodeType'] == 'Expr_Variable':
                 if 'name' in argument['value']:
-                    # Create argument node if it is not there
-                    if not self.graph.find_node(argument['value']['name'], '{scope}:VARIABLE'.format(scope=scope)):
-                        self.graph.create_node(argument['value']['name'], '{scope}:VARIABLE'.format(scope=scope))
+                    # If argument is a variable, there should be a varibale defined earlier
+                    if self.graph.find_node(argument['value']['name'], '{scope}:VARIABLE'.format(scope=scope)):
+                        # Create the "IS_ARGUMENT" relationship
+                        if not self.graph.find_relationship(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), argument['value']['name'], '{scope}:VARIABLE'.format(scope=scope), 'IS_ARGUMENT'):
+                            self.graph.create_relationship(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), argument['value']['name'], '{scope}:VARIABLE'.format(scope=scope), 'IS_ARGUMENT')
+                    # If it is not defined it should be function's arguments
+                    elif self.graph.find_node(argument['value']['name'], '{scope}:PARAM'.format(scope=scope)):
+                        # Create the "IS_ARGUMENT" relationship
+                        if not self.graph.find_relationship(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), argument['value']['name'], '{scope}:PARAM'.format(scope=scope), 'IS_ARGUMENT'):
+                            self.graph.create_relationship(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), argument['value']['name'], '{scope}:PARAM'.format(scope=scope), 'IS_ARGUMENT')
+                    # If there is neither a Variable nor Param, it should be an error
+                    else:
+                        Print.error_print('[ERROR]', 'Node not found: {}'.format(argument['value']['name']))
 
-                    # Create the "IS_ARGUMENT" relationship
-                    if not self.graph.find_relationship(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), argument['value']['name'], '{scope}:VARIABLE'.format(scope=scope), 'IS_ARGUMENT'):
-                        self.graph.create_relationship(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), argument['value']['name'], '{scope}:VARIABLE'.format(scope=scope), 'IS_ARGUMENT')
             # If the argument is a $_GET kind of statement
             elif 'nodeType' in argument['value'] and argument['value']['nodeType'] == 'Expr_ArrayDimFetch':
                 self.expr_array_dim_fetch(argument['value'], " ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), 'IS_ARGUMENT', scope, argument['value']['var']['name'])
