@@ -17,18 +17,28 @@ def stmt_if(self, slice, parent_node, parent_node_type, scope):
         # Describes statements inside the IF block
         if slice['stmts']:
             for stmt in slice['stmts']:
+                if stmt['nodeType'] == 'Stmt_Expression':
+                    self.stmt_expression(stmt['expr'], if_node_name, if_node_type, '{parent_scope}'.format(parent_scope=scope))
+                # If it imports global variables 
+                elif stmt['nodeType'] == 'Stmt_Global':
+                    self.stmt_global(stmt['vars'], if_node_name, if_node_type, '{parent_scope}'.format(parent_scope=scope))
+                # If the statement is a Return statement
+                elif stmt['nodeType'] == 'Stmt_Return':
+                    # self.stmt_return(stmt['expr'], if_node_name, if_node_type, '{this_node}:{parent_scope}'.format(this_node=if_node_name, parent_scope=scope))
+                    self.stmt_return(stmt['expr'], if_node_name, if_node_type, '{parent_scope}'.format(parent_scope=scope))
                 # If the statement is a While block
-                if stmt['nodeType'] == 'Stmt_While':
-                    self.stmt_while(stmt, if_node_name, if_node_type, '{this_node}:{parent_scope}'.format(this_node=if_node_name, parent_scope=parent_node))
+                elif stmt['nodeType'] == 'Stmt_While':
+                    self.stmt_while(stmt, if_node_name, if_node_type, '{parent_scope}'.format(parent_scope=scope))
 
         # Describes the Else block
         if slice['else']:
             if slice['else']['nodeType'] == 'Stmt_Else':
-                self.stmt_else(slice['else'], if_node_name, if_node_type, '{this_node}:{parent_scope}'.format(this_node=if_node_name, parent_scope=parent_node))
+                # self.stmt_else(slice['else'], if_node_name, if_node_type, '{this_node}:{parent_scope}'.format(this_node=if_node_name, parent_scope=scope))
+                self.stmt_else(slice['else'], if_node_name, if_node_type, '{parent_scope}'.format(parent_scope=scope))
     
         # Describes the ELSE IF block
         if slice['elseifs']:
             pass
     
     else:
-        Print.error_print('[ERROR]', 'Issue in "If[conditions][attributes]"')
+        Print.error_print('[404]', 'Issue in "If[conditions][attributes]"')
