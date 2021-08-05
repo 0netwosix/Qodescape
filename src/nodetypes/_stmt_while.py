@@ -19,4 +19,4 @@ def stmt_while(self, slice, parent_node, parent_node_type, scope):
             for stmt in slice['stmts']:
                 pass
     else:
-        Print.error_print('[ERROR]', 'Issue in "While[conditions][attributes]"')
+        Print.error_print('[404]', 'Issue in "While[conditions][attributes]"')

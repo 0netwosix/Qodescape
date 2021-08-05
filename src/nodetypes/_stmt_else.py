@@ -21,4 +21,4 @@ def stmt_else(self, slice, parent_node, parent_node_type, scope):
                 if stmt['nodeType'] == 'Stmt_Echo':
                     self.stmt_echo(stmt['exprs'], else_node_name, else_node_type, '{this_node}:{parent_scope}'.format(this_node=else_node_name, parent_scope=scope))
     else:
-        Print.error_print('[ERROR]', 'Issue in "Else[attributes]"')
+        Print.error_print('[404]', 'Issue in "Else[attributes]"')

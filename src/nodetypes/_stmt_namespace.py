@@ -37,6 +37,6 @@ def stmt_namespace(self, name, stmts):
                         self.graph.create_relationship(stmts[-1]['name']['name'], 'CLASS', node['uses'][0]['name']['parts'][-1], 'CLASS', 'USES')
 
                 else:
-                    Print.error_print('[ERROR]', 'Different "nodeType": {}'.format(node['nodeType']))
+                    Print.error_print('[404]', 'Different "nodeType": {}'.format(node['nodeType']))
         else:
-            Print.error_print('[ERROR]', 'Last list element is not a "Class" node: {}'.format(stmts[-1]['nodeType']))
+            Print.error_print('[404]', 'Last list element is not a "Class" node: {}'.format(stmts[-1]['nodeType']))

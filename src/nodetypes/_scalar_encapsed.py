@@ -13,4 +13,4 @@ def scalar_encapsed(self, expr, parent_node, parent_node_type, relationship_type
                     if not self.graph.find_relationship(parent_node, parent_node_type, part['name'], '{scope}:VARIABLE'.format(scope=scope), relationship_type):
                         self.graph.create_relationship(parent_node, parent_node_type, part['name'], '{scope}:VARIABLE'.format(scope=scope), relationship_type)
                 else:
-                    Print.error_print('[ERROR]', 'Node not found: {}'.format(part['name']))
+                    Print.error_print('[404]', 'Node not found: {}'.format(part['name']))
