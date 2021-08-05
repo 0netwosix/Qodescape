@@ -1,5 +1,6 @@
 # Describes a global variables in a file. 
 # e.g. "global $CFG;"
+# Functionality - imports variables from the global scope into the local scope
 def stmt_global(self, vars, parent_node, parent_node_type, scope):
     # nodeType          -> GLOBAL_VARIABLE
     # relationshipType  -> IS_GLOBAL_VARIABLE
