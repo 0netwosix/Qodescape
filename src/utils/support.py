@@ -9,7 +9,7 @@ class Print:
         [PASS]  ast Directory created: ../test-projects/test-1/ast
 
         Output keywords:
-        [FAIL] [PASS] [WARN] [SKIP] [INFO]
+        [FAIL] [PASS] [WARN] [SKIP] [INFO] [200] [404]
     '''
     # Green text
     @staticmethod
@@ -40,5 +40,12 @@ class Print:
     def time_print(colored_message, message=''):
         print("{colored_message}\t{message}".format(
             colored_message=colored(colored_message, 'white', 'on_red', ['bold']),
+            message=message
+        ))
+
+    # No customizations
+    @staticmethod
+    def clear_print(message=''):
+        print("{message}".format(
             message=message
         ))
