@@ -3,6 +3,7 @@ from utils.support import Print
 # Create a method call relationship in > "$this->user_signup_with_confirmation($user, $notify);"
 # It creates just the method call, not the method defineition node
 # Method call is a call for a method that is defined in the same file
+# e.g. $DB->set_field("something"); This type of statement of is also comes under this
 def expr_method_call(self, expr, parent_node, parent_node_type, scope):
     # Create "METHOD_CALL" node
     if not self.graph.find_node(expr['name']['name'], '{scope}:METHOD_CALL'.format(scope=scope)):
