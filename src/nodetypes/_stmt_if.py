@@ -19,6 +19,9 @@ def stmt_if(self, slice, parent_node, parent_node_type, scope):
             for stmt in slice['stmts']:
                 if stmt['nodeType'] == 'Stmt_Expression':
                     self.stmt_expression(stmt['expr'], if_node_name, if_node_type, '{parent_scope}'.format(parent_scope=scope))
+                # If it is again a If block
+                elif stmt['nodeType'] == 'Stmt_If':
+                    self.stmt_if(stmt, if_node_name, if_node_type, '{parent_scope}'.format(parent_scope=scope))
                 # If it imports global variables 
                 elif stmt['nodeType'] == 'Stmt_Global':
                     self.stmt_global(stmt['vars'], if_node_name, if_node_type, '{parent_scope}'.format(parent_scope=scope))
@@ -36,9 +39,11 @@ def stmt_if(self, slice, parent_node, parent_node_type, scope):
                 # self.stmt_else(slice['else'], if_node_name, if_node_type, '{this_node}:{parent_scope}'.format(this_node=if_node_name, parent_scope=scope))
                 self.stmt_else(slice['else'], if_node_name, if_node_type, '{parent_scope}'.format(parent_scope=scope))
     
-        # Describes the ELSE IF block
+        # Describes the Else If block
         if slice['elseifs']:
-            pass
+            for elseif in slice['elseifs']:
+                if elseif['nodeType'] == 'Stmt_ElseIf':
+                    self.stmt_else_if(elseif, if_node_name, if_node_type, '{parent_scope}'.format(parent_scope=scope))
     
     else:
         Print.error_print('[404]', 'Issue in "If[conditions][attributes]"')
