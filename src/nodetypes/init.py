@@ -3,6 +3,8 @@ class NodeType:
     from nodetypes._expr_func_call import expr_func_call
     from nodetypes._expr_include import expr_include
     from nodetypes._expr_method_call import expr_method_call
+    from nodetypes._expr_property_fetch import expr_property_fetch_rhs
+    from nodetypes._expr_property_fetch import expr_property_fetch_lhs
     from nodetypes._expr_static_call import expr_static_call
     from nodetypes._expr_variable import expr_variable
     from nodetypes._filename_node import filename_node
@@ -12,6 +14,7 @@ class NodeType:
     from nodetypes._stmt_class_method import stmt_class_method
     from nodetypes._stmt_echo import stmt_echo
     from nodetypes._stmt_else import stmt_else
+    from nodetypes._stmt_else_if import stmt_else_if
     from nodetypes._stmt_expression import stmt_expression
     from nodetypes._stmt_global import stmt_global
     from nodetypes._stmt_if import stmt_if
