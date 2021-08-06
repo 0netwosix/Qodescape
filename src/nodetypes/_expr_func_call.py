@@ -3,7 +3,7 @@ from utils.support import Print
 # Create a function call relationship in > "$result = mysqli_query($con, $query);"
 # It creates just the function call, not the function defineition node
 # Function call is a call for a function that is defined in another file
-def expr_func_call(self, expr, parent_node, parent_node_type, scope, relationship_type=''):
+def expr_func_call(self, expr, parent_node, parent_node_type, scope, relationship_type):
     # Create "FUNCTION_CALL" node
     if not self.graph.find_node(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope)):
         self.graph.create_node(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope))
