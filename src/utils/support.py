@@ -3,13 +3,17 @@ from termcolor import colored
 class Print:
     ''' Sample output,
         DB output:
-        [200]   [DB-Node] FOUND: index_exec
-        ------------------------------------
+            [200]   [DB-Node] FOUND: index_exec
         Normal script output:
-        [PASS]  ast Directory created: ../test-projects/test-1/ast
+            [PASS]  ast Directory created: ../test-projects/test-1/ast
 
         Output keywords:
-        [FAIL] [PASS] [WARN] [SKIP] [INFO] [200] [404]
+            [FAIL] [PASS] [WARN] [SKIP] [INFO] [200] [404]
+
+        Color codes:
+            Green - Success
+            Yellow - Informative (In Graph - When a node or a relationship is not found in the DB)
+            Red - Error
     '''
     # Green text
     @staticmethod
