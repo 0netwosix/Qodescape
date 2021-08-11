@@ -5,24 +5,8 @@ import json
 import sys
 
 from graph import Graph
-from nodetypes.init import NodeType
+import nodetypes
 from utils.support import Print
-
-# To go inside each nested dictionary and get its 'nodeType'
-# def test_read_object(slice):
-#     for key, value in slice.items():
-#         # Print.clear_print('KEY: {}'.format(key))
-#         if isinstance(value, dict):
-#             if key != 'attributes':
-#                 test_read_object(value)
-#         elif isinstance(value, list):
-#             for item in value:
-#                 if isinstance(item, dict):
-#                     test_read_object(item)
-#         else:
-#             # if key == 'nodeType':
-#             Print.clear_print('[test] KEY: {} -> {}'.format(key, value))
-            
 
 # Read the given array object from iterateObjects()
 def read_object(slice):
@@ -107,6 +91,6 @@ def main():
 
 if __name__ == '__main__':
     graph = Graph()
-    node_type = NodeType(graph)
+    node_type = nodetypes.NodeTypes(graph)
     main()
     graph.close()

@@ -1,4 +1,4 @@
-class NodeType:
+class NodeTypes:
     from nodetypes._expr_array_dim_fetch import expr_array_dim_fetch
     from nodetypes._expr_func_call import expr_func_call
     from nodetypes._expr_include import expr_include
