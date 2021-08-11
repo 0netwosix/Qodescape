@@ -1,9 +1,31 @@
 from utils.support import Print
 
-# Create a method call relationship in > "$this->user_signup_with_confirmation($user, $notify);"
-# It creates just the method call, not the method defineition node
-# Method call is a call for a method that is defined in the same file
-# e.g. $DB->set_field("something"); This type of statement of is also comes under this
+'''
+    Create a method call relationship like in e.g. s.
+    It creates just the method call, not the method defineition node.
+    Method call is a call for a method that is defined in the same file.
+
+    e.g.1. $this->user_signup_with_confirmation($user, $notify);
+    e.g.2. $DB->set_field("something"); This type of statement is also comes under this category.
+
+    TODO: 
+        1.) Create a relationship with original "Method" when it is a "Expr_MethodCall".
+        - See Notion.
+        2.) Call a generalized function to map nodes in args.
+
+    HOW IT WORKS!
+    - It works identical to "expr_func_call()".
+    - Only the labels would change.
+    - Scope
+        - scope = CLASS.name, CLASS_METHOD.name or FILENAME.name
+        - METHOD_CALL
+    - Node
+        - user_signup_with_confirmation:{scope:METHOD_CALL}
+    - Relationship
+        - (parent_node)-[METHOD_CALL]->(user_signup_with_confirmation:{scope:METHOD_CALL})
+    - Args Relationship
+        - (user_signup_with_confirmation:{scope:METHOD_CALL})-[IS_ARGUMENT]->(argument node)
+'''
 def expr_method_call(self, expr, parent_node, parent_node_type, scope):
     # Create "METHOD_CALL" node
     if not self.graph.find_node(expr['name']['name'], '{scope}:METHOD_CALL'.format(scope=scope)):

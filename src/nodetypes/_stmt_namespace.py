@@ -1,6 +1,32 @@
 from utils.support import Print
 
-# Describes "namespace App\Http\Controllers\AnyFolder;"
+'''
+    Describes a namespace statement.
+    Filename or Namespace would be the root node for each file. 
+
+    TODO:
+        1.) Re-evaluate logic and transfer "CLASS" node creation to "stmt_class()" if possible.
+        2.) Create a seperate method to handle "Stmt_Use" nodeType. (look at 2.2 below)
+
+    e.g.1. namespace App\Http\Controllers\AnyFolder ... class Scan {};
+    e.g.2. use App\Models\Folder\File;
+
+    HOW IT WORKS!
+    1.) It creates "App\Http\Controllers\AnyFolder" node with following labels if it is not there already.
+        - NAMESPACE
+    2.) Then it looks at stmts inside namespace block and,
+        2.1.) Calls "stmt_class()" to establish "CLASS" type node and the relationship.
+        2.2.) Then it looks at the "Stmt_Use" staments,
+            2.2.1.) It creates "File" node with following labels if it is not there already.
+                - CLASS
+            2.2.2.) It creates "App\Models\Folder" node with following labels if it is not there already.
+                - NAMESPACE
+            2.2.3.) Then it creats the following relationship if it does not exist already.
+                - ("App\Models\Folder":{NAMESPACE})-[CONTAINS]->(File:{CLASS})
+        2.3.) Once done it creats the following relationship if it does not exist already.
+            - relationship_types = USES
+            - (Scan:{CLASS})-[USES]->(File:{CLASS})
+'''
 def stmt_namespace(self, name, stmts):
     namespace_name = '\\'.join(name)
     # Create 'NAMESAPCE' node

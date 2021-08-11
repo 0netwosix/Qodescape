@@ -1,8 +1,39 @@
 from utils.support import Print
 
-# Create a function call relationship in > "$result = mysqli_query($con, $query);"
-# It creates just the function call, not the function defineition node
-# Function call is a call for a function that is defined in another file
+'''
+    Describes a function call relationship like in e.g.
+    It creates just the function call, not the function defineition node.
+    Function call is a call for a function that is defined in another file.
+
+    e.g. $result = mysqli_query($con, $query);
+
+    TODO: 
+        1. Call a generalized function to map nodes in args.
+
+    HOW IT WORKS!
+    1.) It creates "mysqli_query" node with following labels if it is not there already.
+        - scope = CLASS.name, CLASS_METHOD.name or FILENAME.name
+        - FUNCTION_CALL
+    - Node
+        - mysqli_query:{scope:FUNCTION_CALL}
+    2.) Then it creates the following relationship if it does not exist.
+        - relationship_types = IS_ARGUMENT, FUNCTION_CALL, ASSIGNS
+        - (parent_node)-[relationship_type]->(mysqli_query:{scope:FUNCTION_CALL})
+    3.) Once node and it's relationship is created, it looks at it's arguments.
+        3.1.) Based on the nodeType of each of the argument, it calls the relavant nodeType method to 
+        establish the node and the relationship. 
+            - If the argument nodeType is "Expr_Variable",
+                - It should be defined as a method variable or a method parameter.
+                - Therefore, first it looks at "VARIABLE"s in the same scope, if not found,
+                - It looks at "PARAM"s in the same scope,
+                - And creates the following relationship. 
+                    - (mysqli_query:{scope:FUNCTION_CALL})-[IS_ARGUMENT]->(argument node)
+                - If it is not found in "VARIABLE"s or "PARAM"s, it will raise and error and continue.
+            - If the argument nodeType is "Expr_FuncCall",
+                - It calls "expr_func_call()"
+            - If the argument nodeType is "Expr_ArrayDimFetch",
+                - It calls "expr_array_dim_fetch()"
+'''
 def expr_func_call(self, expr, parent_node, parent_node_type, scope, relationship_type):
     # Create "FUNCTION_CALL" node
     if not self.graph.find_node(" ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope)):

@@ -1,6 +1,26 @@
 from utils.support import Print
 
-# Describes a If block
+'''
+    Describes a If block.
+
+    TODO: 
+        1. Call a generalized function to map nodes in stmts.
+
+    HOW IT WORKS!
+    1.) It creates a custom node name for the "if" node as it can have multiple "if" nodes in a single scope.
+        - IF.name = IF_line_127
+    2.) Then it creates "IF_line_127" node with following labels.
+        - scope = CLASS.name, CLASS_METHOD.name or FILENAME.name
+        - IF
+    3.) Then it creates the following relationship if it does not exist.
+        - relationship_types = IF_BLOCK
+        - (parent_node)-[IF_BLOCK]->(IF_line_127:{scope:IF})
+    4.) Once done, it looks at the statements inside the "if" block and calls the relavant nodeType method accordingly.
+        - If it is a "Stmt_Expression", it calls "stmt_expression()".
+        - ...
+    5.) Then it checks whether it has "elseifs", if so it calls "stmt_else_if()" for each "elseif".
+    6.) Then it checks whether it has a "else", if so it calls "stmt_else()".
+'''
 def stmt_if(self, slice, parent_node, parent_node_type, scope):
     if slice['cond']['attributes']['startLine']:
         if_node_type = '{scope}:IF'.format(scope=scope)

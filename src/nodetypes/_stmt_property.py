@@ -1,5 +1,16 @@
-# Describes a protected variable
-# e.g. "protected $feedbackstructure;"
+'''
+    Describes a protected variable.
+
+    e.g. protected $testVar;
+
+    HOW IT WORKS!
+    1.) It creates "testVar" node with following labels if it does not exist.
+        - scope = CLASS.name, CLASS_METHOD.name or FILENAME.name
+        - PROTECTED_VARIABLE
+    2.) Then it creates the following relationship if it does not exist.
+        - relationship_types = IS_PROTECTED_VARIABLE
+        - (parent_node)-[IS_PROTECTED_VARIABLE]->(testVar:{scope:PROTECTED_VARIABLE})
+'''
 def stmt_property(self, props, parent_node, parent_node_type, scope):
     if props:
         for prop in props:

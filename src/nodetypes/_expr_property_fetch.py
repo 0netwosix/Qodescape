@@ -1,15 +1,24 @@
 from utils.support import Print
 
 '''
-    Describes a scenario like below
+    Describes a scenario like in e.g.
+
     e.g. $something = $user->password;
 
-    NOTE
-    See "stmt_expression" for calls for these functions
+    Parent node     = $something
+    Child node      = $password (PROPERTY)
+    Relationship    = something-[ASSIGNS]->(password)
 
-    $user->password
-    $user = expr['var']['name']
-    password = expr['name']['name']
+    NOTE
+    - See "stmt_expression()" for calls for these two functions
+
+    HOW IT WORKS!
+    1.) Checks whether it is fetching from a variable not from the current object.
+    2.) If so, it calls "expr_property_fetch_lhs()" method to create or to check the exestance of the corresponding
+    node and relationship. (Details in "expr_property_fetch_lhs()" method)
+    3.) Then it create a relationship as follows,
+        - relationship_types = ASSIGNS
+        - (parent_node)-[ASSIGNS]->(password:{scope:PROPERTY})
 '''
 def expr_property_fetch_rhs(self, expr, parent_node, parent_node_type, scope, relationship_type):
     # If it is not a "$this->variable"
@@ -24,21 +33,22 @@ def expr_property_fetch_rhs(self, expr, parent_node, parent_node_type, scope, re
             Print.error_print('[404]', 'Node not found: {}'.format(expr['var']['name']))
 
 '''
-    Describes a scenario like below
+    Describes a scenario like in e.g.
+
     e.g. $user->password = something();
 
-    Parent node     = $user ('VARIABLE') ('GLOBAL_VARIABLE') ('PARAM')
+    Parent node     = $user ('VARIABLE') or ('GLOBAL_VARIABLE') or ('PARAM')
     Child node      = password ('PROPERTY')
-    Relationship    = $user -['IS_PROPERTY']-> password
+    Relationship    = user-[IS_PROPERTY]->password
 
+    HOW IT WORKS!
     1.) Search for "$user" in a "variable", "global variable" if not search for a function "parameter",
     it should be in one of those. If not it should be an error.
     2.) Once found, "password" is a property of "$user"
     3.) Search for "password" within the scope
-        3.1.) If found then search for a relationship "$user -> IS_PROPERTY -> password"
+        3.1.) If found then search for a relationship "($user)-[IS_PROPERTY]->(password)"
         3.2.) If not found create the "password" node
-        3.3.) And create the relationship "$user -> IS_PROPERTY -> password"
-    4.) Once created, create the relationship "$something -> ASSIGNS -> password"
+        3.3.) And create the relationship "($user)-[IS_PROPERTY]->(password)"
 '''
 def expr_property_fetch_lhs(self, var, scope):
     # If it is not a "$this->variable"

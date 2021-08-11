@@ -1,5 +1,8 @@
-# Describes a static call
-# e.g. self::__construct();
+'''
+    Describes a static call.
+
+    e.g. self::__construct();
+'''
 def expr_static_call(self, name, parent_node, parent_node_type, scope):
     if name['nodeType'] == 'Identifier':       
         # Child class will also be a Method in this case

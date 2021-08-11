@@ -1,6 +1,24 @@
 from utils.support import Print
 
-# Describes a Else If block
+'''
+    Describes a Else If block.
+
+    TODO: 
+        1. Call a generalized function to map nodes in stmts.
+
+    HOW IT WORKS!
+    1.) It creates a custom node name for the "else if" node as it can have multiple "else if" nodes in a single scope.
+        - ELSEIF.name = ELSEIF_line_127
+    2.) Then it creates "ELSEIF_line_127" node with following labels.
+        - scope = CLASS.name, CLASS_METHOD.name or FILENAME.name
+        - ELSEIF
+    3.) Then it creates the following relationship if it does not exist.
+        - relationship_types = ELSEIF_BLOCK
+        - (parent_node)-[ELSEIF_BLOCK]->(ELSEIF_line_127:{scope:ELSEIF})
+    4.) Once done, it looks at the statements inside the "else if" block and calls the relavant nodeType method accordingly.
+        - If it is a "Stmt_Expression", it calls "stmt_expression()".
+        - ...
+'''
 def stmt_else_if(self, slice, parent_node, parent_node_type, scope):
     if slice['attributes']['startLine']:
         else_if_node_type = 'ELSEIF:{scope}'.format(scope=scope)
