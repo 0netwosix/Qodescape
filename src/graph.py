@@ -4,7 +4,7 @@ import logging
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
 
-from utils.support import Print
+from utils import Print
 
 class Graph:
     def __init__(self):

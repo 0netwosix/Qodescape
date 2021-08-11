@@ -1,4 +1,4 @@
-from utils.support import Print
+from utils import Print
 
 '''
     Create a method call relationship like in e.g. s.

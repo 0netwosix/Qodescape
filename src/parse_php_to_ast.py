@@ -5,7 +5,7 @@ import os
 import sys
 import time
 
-from utils.support import Print
+from utils import Print
 
 # Run "php-parse" command and generate [FILENAME]-ast.json
 def generate_ast_file(file_path):

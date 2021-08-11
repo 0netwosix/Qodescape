@@ -5,7 +5,7 @@ import os
 import sys
 import time
 
-from utils.support import Print
+from utils import Print
 
 # Generate graph from AST
 def generate_graph(file_path):

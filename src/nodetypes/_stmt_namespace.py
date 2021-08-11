@@ -1,4 +1,4 @@
-from utils.support import Print
+from utils import Print
 
 '''
     Describes a namespace statement.

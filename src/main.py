@@ -6,7 +6,7 @@ import sys
 
 from graph import Graph
 import nodetypes
-from utils.support import Print
+from utils import Print
 
 # Read the given array object from iterateObjects()
 def read_object(slice):

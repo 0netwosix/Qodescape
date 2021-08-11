@@ -1,4 +1,4 @@
-from utils.support import Print
+from utils import Print
 
 '''
     Describes a function call relationship like in e.g.
