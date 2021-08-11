@@ -4,7 +4,7 @@ import argparse
 import json
 import sys
 
-from graph import Graph
+import graph
 import nodetypes
 from utils import Print
 
@@ -90,7 +90,7 @@ def main():
     iterate_objects(open_file(file_path))
 
 if __name__ == '__main__':
-    graph = Graph()
+    graph = graph.Graph()
     node_type = nodetypes.NodeTypes(graph)
     main()
     graph.close()
