@@ -1,5 +1,13 @@
-# Describes a whole line inside the code
-# eg: value assignment, function call
+'''
+    Describes a whole line inside the code. It can be a assignments operation,
+    function call etc.
+    This file is also an intermediate place where it calls other node types.
+
+    TODO: 
+        1. Try calling the generalized function to map nodes. Would be tricky than in 
+        stmts in other nodes.
+        2. Need to reasess the whole file.
+'''
 def stmt_expression(self, expr, parent_node, parent_node_type, scope):
     if expr['nodeType'] == 'Expr_Assign':
         variable_decalred = False
@@ -38,7 +46,18 @@ def stmt_expression(self, expr, parent_node, parent_node_type, scope):
                 # Therefore "variable_declared" should be False
                 if expr['expr']['nodeType'] == 'Expr_FuncCall':
                     self.expr_func_call(expr['expr'], expr['var']['name']['name'], '{scope}:PROPERTY'.format(scope=scope), scope, 'ASSIGNS')
-                
+        
+        # Describes "$identity[] = $data->$userextrafield;"
+        elif expr['var']['nodeType'] == 'Expr_ArrayDimFetch':
+            if not expr['var']['dim']:
+                self.expr_variable(expr['var'], parent_node, parent_node_type, scope, 'VARIABLE', 'IS_VARIABLE')
+
+                # Handle the assigned value for this nodeType seperately in here
+                # Therefore "variable_declared" should be False
+                if expr['expr']['nodeType'] == 'Expr_PropertyFetch':
+                    self.expr_property_fetch_rhs(expr['expr'], expr['var']['var']['name'], '{scope}:VARIABLE'.format(scope=scope), scope, 'ASSIGNS')
+                elif expr['expr']['nodeType'] == 'Expr_FuncCall':
+                    self.expr_func_call(expr['expr'], expr['var']['var']['name'], '{scope}:VARIABLE'.format(scope=scope), scope, 'ASSIGNS')
 
         ''' Following describes the value of above variable
         '''
@@ -65,7 +84,7 @@ def stmt_expression(self, expr, parent_node, parent_node_type, scope):
                 self.scalar_encapsed(expr['expr'], expr['var']['name'], '{scope}:VARIABLE'.format(scope=parent_node), 'ASSIGNS', scope)
 
     elif expr['nodeType'] == 'Expr_FuncCall':
-        self.expr_func_call(expr, parent_node, parent_node_type, scope, 'FUNCTION_CALL')
+        self.expr_func_call(expr, parent_node, parent_node_type, scope, 'IS_FUNCTION_CALL')
     elif expr['nodeType'] == 'Expr_MethodCall':
         self.expr_method_call(expr, parent_node, parent_node_type, scope)
     elif expr['nodeType'] == 'Expr_AssignOp_Concat':
