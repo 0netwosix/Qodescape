@@ -38,5 +38,9 @@ def stmt_else(self, slice, parent_node, parent_node_type, scope):
                 # If the statement is an echo
                 if stmt['nodeType'] == 'Stmt_Echo':
                     self.stmt_echo(stmt['exprs'], else_node_name, else_node_type, '{parent_scope}'.format(parent_scope=scope))
+                elif stmt['nodeType'] == 'Stmt_Expression':
+                    self.stmt_expression(stmt['expr'], else_node_name, else_node_type, '{parent_scope}'.format(parent_scope=scope))
+                elif stmt['nodeType'] == 'Stmt_Foreach':
+                    self.stmt_foreach(stmt, else_node_name, else_node_type, '{parent_scope}'.format(parent_scope=scope))
     else:
         Print.error_print('[404]', 'Issue in "Else[attributes]"')
