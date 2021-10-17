@@ -35,6 +35,9 @@ def read_object(slice):
                 node_type.stmt_global(slice['vars'], file_name, 'FILENAME', file_name)
             elif value == 'Stmt_Class':
                 node_type.stmt_class(slice, file_name, 'FILENAME', 'CONTAINS', file_name)
+            # If it is just a function without a class
+            # elif value == 'Stmt_Function':
+            #     node_type.stmt_class_method(slice, file_name, 'FILENAME', 'CONTAINS', file_name)
             elif value == 'Stmt_Expression':
                 # Parent node is considered as 'file_name'
                 node_type.stmt_expression(slice['expr'], file_name, 'FILENAME', file_name)
