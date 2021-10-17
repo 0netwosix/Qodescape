@@ -32,8 +32,8 @@ def expr_method_call(self, expr, parent_node, parent_node_type, scope):
         self.graph.create_node(expr['name']['name'], '{scope}:METHOD_CALL'.format(scope=scope))
 
     # Create "METHOD_CALL" relationship
-    if not self.graph.find_relationship(parent_node, parent_node_type, expr['name']['name'], '{scope}:METHOD_CALL'.format(scope=scope), 'METHOD_CALL'):
-        self.graph.create_relationship(parent_node, parent_node_type, expr['name']['name'], '{scope}:METHOD_CALL'.format(scope=scope), 'METHOD_CALL')
+    if not self.graph.find_relationship(parent_node, parent_node_type, expr['name']['name'], '{scope}:METHOD_CALL'.format(scope=scope), 'IS_METHOD_CALL'):
+        self.graph.create_relationship(parent_node, parent_node_type, expr['name']['name'], '{scope}:METHOD_CALL'.format(scope=scope), 'IS_METHOD_CALL')
 
     if expr['args']:
         for argument in expr['args']:
