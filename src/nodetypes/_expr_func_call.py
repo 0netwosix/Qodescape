@@ -2,7 +2,7 @@ from utils import Print
 
 '''
     Describes a function call relationship like in e.g.
-    It creates just the function call, not the function defineition node.
+    It creates just the function call, not the function definition node.
     Function call is a call for a function that is defined in another file.
 
     e.g. $result = mysqli_query($con, $query);
