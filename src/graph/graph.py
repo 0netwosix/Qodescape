@@ -108,6 +108,40 @@ class Graph:
                 query=query, exception=exception))
             raise
 
+    # Create an Echo relationship - adds a property "echo:true" to the relationship
+    def create_echo_relationship(self, parent_node, parent_node_type, child_node, child_node_type, relationship_type):
+        # pass
+        with self.driver.session() as session:
+            # Write transactions allow the driver to handle retries and transient errors
+            result = session.write_transaction(
+                self._create_and_return_echo_relationship, parent_node, parent_node_type, child_node, child_node_type, relationship_type)
+            for row in result:
+                Print.success_print("[200]", "[DB-Relationship] CREATED: {parent} {relationship} {child}".format(
+                    parent=row["a"],
+                    relationship=row["r"] , 
+                    child=row["b"]))
+
+    @staticmethod
+    def _create_and_return_echo_relationship(tx, parent_node, parent_node_type, child_node, child_node_type, relationship_type):
+        # Create a query with given parameters and execute it
+        query = (
+            "MATCH "
+            "   (a:{parent_node_type}), ".format(parent_node_type=parent_node_type)+
+            "   (b:{child_node_type}) ".format(child_node_type=child_node_type)+
+            "WHERE a.name = $parent_node AND b.name = $child_node "
+            "CREATE (a)-[r:{relationship_type} {{echo: true}}]->(b) ".format(relationship_type=relationship_type)+
+            "RETURN a,b,type(r)"
+        )
+        result = tx.run(query, parent_node=parent_node, child_node=child_node)
+        try:
+            return [{"a": row["a"]["name"], "b": row["b"]["name"], "r":row["type(r)"]}
+                    for row in result]
+        # Capture any errors along with the query and data for traceability
+        except ServiceUnavailable as exception:
+            logging.error("{query} raised an error: \n {exception}".format(
+                query=query, exception=exception))
+            raise
+
     # Returns TRUE if found
     def find_node(self, node_name, node_type):
         with self.driver.session() as session:
