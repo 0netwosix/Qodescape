@@ -37,7 +37,7 @@ def stmt_echo(self, exprs, parent_node, parent_node_type, scope):
                     if self.graph.find_node(expr['name'], '{scope}:VARIABLE'.format(scope=scope)):
                         # Check if 'ECHO' relationship exists
                         if not self.graph.find_relationship(parent_node, parent_node_type, expr['name'], '{scope}:VARIABLE'.format(scope=scope), 'ECHO'):
-                            self.graph.create_relationship(parent_node, parent_node_type, expr['name'], '{scope}:VARIABLE'.format(scope=scope), 'ECHO')
+                            self.graph.create_echo_relationship(parent_node, parent_node_type, expr['name'], '{scope}:VARIABLE'.format(scope=scope), 'ECHO')
                     else:
                         Print.error_print('[404]', 'Node not found: {}'.format(expr['name']))
                 else:
@@ -47,10 +47,10 @@ def stmt_echo(self, exprs, parent_node, parent_node_type, scope):
                 # Check if the parent node is available
                 if self.graph.find_node(parent_node, parent_node_type):
                     # Create the function_call node if not available in the scope
-                    self.expr_func_call(expr, parent_node, parent_node_type, scope, 'FUNCTION_CALL')
+                    self.expr_func_call(expr, parent_node, parent_node_type, scope, 'IS_FUNCTION_CALL')
 
                     # Check if 'ECHO' relationship exists
                     if not self.graph.find_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), 'ECHO'):
-                        self.graph.create_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), 'ECHO')
+                        self.graph.create_echo_relationship(parent_node, parent_node_type, " ".join(expr['name']['parts']), '{scope}:FUNCTION_CALL'.format(scope=scope), 'ECHO')
                 else:
                     Print.error_print('[404]', 'Node not found: {}'.format(parent_node))
