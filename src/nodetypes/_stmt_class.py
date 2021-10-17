@@ -5,6 +5,7 @@
 
     TODO: 
         1. Call a generalized function to map nodes in stmts.
+        2. Add "FILENAME.name" into the scope. (helpful when multiple classes are in the same file)
 
     HOW IT WORKS!
     1.) It creates "ClassOne" node with following labels if it is not already there.
