@@ -59,3 +59,6 @@ def stmt_class_method(self, node, parent_node, parent_node_type, relationship_ty
                 self.stmt_return(stmt['expr'], node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope), '{scope}:{class_method}'.format(scope=scope, class_method=node['name']['name']))
             elif stmt['nodeType'] == 'Stmt_Echo':
                 self.stmt_echo(stmt['exprs'], node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope), '{scope}:{class_method}'.format(scope=scope, class_method=node['name']['name']))
+            elif stmt['nodeType'] == 'Stmt_Foreach':
+                self.stmt_foreach(stmt, node['name']['name'], '{scope}:CLASS_METHOD'.format(scope=scope), '{scope}:{class_method}'.format(scope=scope, class_method=node['name']['name']))
+            
