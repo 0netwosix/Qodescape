@@ -16,11 +16,13 @@ class NodeTypes:
     from nodetypes._stmt_else import stmt_else
     from nodetypes._stmt_else_if import stmt_else_if
     from nodetypes._stmt_expression import stmt_expression
+    from nodetypes._stmt_foreach import stmt_foreach
     from nodetypes._stmt_global import stmt_global
     from nodetypes._stmt_if import stmt_if
     from nodetypes._stmt_namespace import stmt_namespace
     from nodetypes._stmt_property import stmt_property
     from nodetypes._stmt_return import stmt_return
+    from nodetypes._stmt_use import stmt_use
     from nodetypes._stmt_while import stmt_while
     from nodetypes._support import generate_block_name_by_line
 
