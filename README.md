@@ -1,2 +1,2 @@
-# PHP-Graph-Parser
+# Qodescape
 This converts a syntax tree into a graph.
