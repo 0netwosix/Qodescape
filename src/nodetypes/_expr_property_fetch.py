@@ -14,7 +14,7 @@ from utils import Print
 
     HOW IT WORKS!
     1.) Checks whether it is fetching from a variable not from the current object.
-    2.) If so, it calls "expr_property_fetch_lhs()" method to create or to check the exestance of the corresponding
+    2.) If so, it calls "expr_property_fetch_lhs()" method to create or to check the existance of the corresponding
     node and relationship. (Details in "expr_property_fetch_lhs()" method)
     3.) Then it create a relationship as follows,
         - relationship_types = ASSIGNS
@@ -46,9 +46,9 @@ def expr_property_fetch_rhs(self, expr, parent_node, parent_node_type, scope, re
     it should be in one of those. If not it should be an error.
     2.) Once found, "password" is a property of "$user"
     3.) Search for "password" within the scope
-        3.1.) If found then search for a relationship "($user)-[IS_PROPERTY]->(password)"
+        3.1.) If found then search for a relationship "($user)-[IS_PROPERTY]->(password:{scope:PROPERTY})"
         3.2.) If not found create the "password" node
-        3.3.) And create the relationship "($user)-[IS_PROPERTY]->(password)"
+        3.3.) And create the relationship "($user)-[IS_PROPERTY]->(password:{scope:PROPERTY})"
 '''
 def expr_property_fetch_lhs(self, var, scope):
     # If it is not a "$this->variable"
