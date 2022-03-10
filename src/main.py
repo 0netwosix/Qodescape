@@ -9,43 +9,43 @@ import nodetypes
 from utils import Print
 
 # Read the given array object from iterateObjects()
-def read_object(slice):
+def read_object(object):
     # Iterate through each key in current object
-    for key, value in slice.items():
+    for key, value in object.items():
         if key == 'nodeType':
             Print.clear_print('[main] KEY: {} -> {}'.format(key, value))
-
-            # nodeType: "Stmt_InlineHTML"
-            if value == 'Stmt_InlineHTML':
-                continue
 
             # nodeType: "Stmt_Namespace"
             if value == 'Stmt_Namespace':
                 # Making sure [nodeType: "Name"] inside "name"
-                if slice['name']['nodeType'] == 'Name':
-                    node_type.stmt_namespace(slice['name']['parts'], slice['stmts'])
+                if object['name']['nodeType'] == 'Name':
+                    node_type.stmt_namespace(object['name']['parts'], object['stmts'])
             else:
                 # Create a node for the FileName
                 node_type.filename_node(file_name)
 
                 # If true, parent_node = file_name
-                no_namespace = True
+                # no_namespace = True
 
-            if value == 'Stmt_Global':
-                node_type.stmt_global(slice['vars'], file_name, 'FILENAME', file_name)
+            if value == 'Stmt_InlineHTML':
+                continue
+            elif value == 'Stmt_Global':
+                node_type.stmt_global(object['vars'], file_name, 'FILENAME', file_name)
             elif value == 'Stmt_Class':
-                node_type.stmt_class(slice, file_name, 'FILENAME', 'CONTAINS', file_name)
+                node_type.stmt_class(object, file_name, 'FILENAME', 'CONTAINS', file_name)
             # If it is just a function without a class
             # elif value == 'Stmt_Function':
             #     node_type.stmt_class_method(slice, file_name, 'FILENAME', 'CONTAINS', file_name)
             elif value == 'Stmt_Expression':
                 # Parent node is considered as 'file_name'
-                node_type.stmt_expression(slice['expr'], file_name, 'FILENAME', file_name)
+                node_type.stmt_expression(object['expr'], file_name, 'FILENAME', file_name)
             elif value == 'Stmt_Echo':
                 # Parent node is considered as 'file_name'
-                node_type.stmt_echo(slice['exprs'], file_name, 'FILENAME', file_name)
+                node_type.stmt_echo(object['exprs'], file_name, 'FILENAME', file_name)
             elif value == 'Stmt_If':
-                node_type.stmt_if(slice, file_name, 'FILENAME', file_name)
+                node_type.stmt_if(object, file_name, 'FILENAME', file_name)
+            else:
+                Print.error_print('[main] KEY: {} -> {}'.format(key, value))
 
         elif type(value) is dict:
             Print.clear_print('[main] DICT: {} -> {}'.format(key ,value.keys()))
@@ -56,8 +56,8 @@ def read_object(slice):
 # Iterate through each json array object
 def iterate_objects(current_file_json):
     # slice eaquals to each object in json
-    for slice in current_file_json:
-        read_object(slice)
+    for object in current_file_json:
+        read_object(object)
         Print.clear_print('-----------------------------------')
 
 # Opens the given file and return a json
@@ -86,8 +86,8 @@ def main():
     file_name = file_path.split('/')[-1].split('-ast.json')[0]
 
     # If 'namespace' is not there, parent node should be above 'file_name'
-    global no_namespace
-    no_namespace = False
+    # global no_namespace
+    # no_namespace = False
 
     # Read json array objects
     iterate_objects(open_file(file_path))

@@ -1,3 +1,5 @@
+from utils import Print
+
 class NodeTypes:
     from nodetypes._expr_array_dim_fetch import expr_array_dim_fetch
     from nodetypes._expr_func_call import expr_func_call
@@ -27,4 +29,12 @@ class NodeTypes:
     from nodetypes._support import generate_block_name_by_line
 
     def __init__(self, graph):
-        self.graph = graph       
+        self.graph = graph    
+
+    def choose_nodetype(self, node, parent_node=None, parent_node_type=None, relationship_type=None, scope=None):
+        # Iterate through each key in current node
+        for key, value in node.items():
+            if key == 'nodeType':
+                # Inner HTML
+                if value == 'Stmt_InlineHTML':
+                    continue
